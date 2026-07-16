@@ -1,0 +1,45 @@
+@media print {
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  nav,
+  aside,
+  header,
+  footer,
+  button {
+    display: none !important;
+  }
+
+  #invoice {
+    background: white !important;
+    color: black !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    border: 1px solid #ccc;
+    padding: 10px;
+  }
+
+  h1,
+  h2,
+  h3,
+  p,
+  span {
+    color: black !important;
+  }
+}

@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Product {
+  id            Int      @id @default(autoincrement())
+
+  name          String
+  brand         String
+  category      String
+
+  sku           String   @unique
+  barcode       String?
+
+  cost          Float
+  retail        Float
+
+  quantity      Int
+  minimumStock  Int
+
+  supplier      String?
+  shelfLocation String?
+
+  image         String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  saleItems     SaleItem[]
+  installItems  InstallItem[]
+}
+
+model Customer {
+  id          Int      @id @default(autoincrement())
+
+  firstName   String
+  lastName    String
+
+  phone       String
+  email       String?
+
+  notes       String?
+
+  createdAt   DateTime @default(now())
+
+  sales       Sale[]
+  installJobs InstallJob[]
+}
+
+model Sale {
+  id             Int      @id @default(autoincrement())
+
+  invoiceNumber  String   @unique
+
+  customerId     Int?
+
+  subtotal       Float
+  tax            Float
+  total          Float
+
+  paymentMethod  String
+
+  createdAt      DateTime @default(now())
+
+  customer        Customer? @relation(fields: [customerId], references: [id])
+  items           SaleItem[]
+}
+
+model SaleItem {
+  id            Int @id @default(autoincrement())
+
+  saleId        Int
+  productId     Int
+
+  quantity      Int
+  price         Float
+
+  fulfillment   FulfillmentType @default(STOCK)
+  status         OrderStatus @default(PENDING)
+
+  vendor         String?
+  tracking       String?
+  eta            DateTime?
+  notes          String?
+
+  sale           Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product        Product @relation(fields: [productId], references: [id])
+}
+
+model InstallJob {
+  id           Int      @id @default(autoincrement())
+
+  customerId   Int?
+
+  title        String
+  vehicle      String?
+
+  status       JobStatus @default(PENDING)
+
+  laborCost    Float @default(0)
+
+  notes        String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  customer     Customer? @relation(fields: [customerId], references: [id])
+
+  items        InstallItem[]
+}
+
+model InstallItem {
+  id            Int @id @default(autoincrement())
+
+  installJobId  Int
+  productId     Int
+
+  quantity      Int
+  unitPrice     Float
+
+  installJob    InstallJob @relation(fields: [installJobId], references: [id], onDelete: Cascade)
+  product        Product    @relation(fields: [productId], references: [id])
+}
+
+enum JobStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum FulfillmentType {
+  STOCK
+  DROPSHIP
+}
+
+enum OrderStatus {
+  PENDING
+  ORDERED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}

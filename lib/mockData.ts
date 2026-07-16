@@ -1,0 +1,32 @@
+export const inventory = [
+  {
+    id: 1,
+    sku: "JP23",
+    name: "JP23 V2",
+    brand: "JP",
+    quantity: 8,
+    cost: 540,
+    retail: 799,
+    reorderLevel: 2,
+  },
+  {
+    id: 2,
+    sku: "DBM67",
+    name: "M67AN",
+    brand: "Deaf Bonce",
+    quantity: 14,
+    cost: 95,
+    retail: 159,
+    reorderLevel: 4,
+  },
+  {
+    id: 3,
+    sku: "EXL124",
+    name: "EXL124",
+    brand: "DS18",
+    quantity: 3,
+    cost: 110,
+    retail: 179,
+    reorderLevel: 2,
+  },
+];

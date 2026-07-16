@@ -1,0 +1,71 @@
+"use server";
+
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+
+export async function addProduct(formData: FormData) {
+  await prisma.product.create({
+    data: {
+      name: String(formData.get("name")),
+      brand: String(formData.get("brand")),
+      category: String(formData.get("category")),
+
+      sku: String(formData.get("sku")),
+      barcode: String(formData.get("barcode") || ""),
+
+      cost: Number(formData.get("cost")),
+      retail: Number(formData.get("retail")),
+
+      quantity: Number(formData.get("quantity")),
+      minimumStock: Number(formData.get("minimumStock")),
+
+      supplier: String(formData.get("supplier") || "") || null,
+      shelfLocation: String(formData.get("shelfLocation") || "") || null,
+      image: null,
+    },
+  });
+
+  revalidatePath("/inventory");
+  redirect("/inventory");
+}
+
+export async function updateProduct(formData: FormData) {
+  const id = Number(formData.get("id"));
+
+  await prisma.product.update({
+    where: {
+      id,
+    },
+    data: {
+      name: String(formData.get("name")),
+      brand: String(formData.get("brand")),
+      category: String(formData.get("category")),
+
+      sku: String(formData.get("sku")),
+      barcode: String(formData.get("barcode") || ""),
+
+      cost: Number(formData.get("cost")),
+      retail: Number(formData.get("retail")),
+
+      quantity: Number(formData.get("quantity")),
+      minimumStock: Number(formData.get("minimumStock")),
+
+      supplier: String(formData.get("supplier") || "") || null,
+      shelfLocation: String(formData.get("shelfLocation") || "") || null,
+    },
+  });
+
+  revalidatePath("/inventory");
+  redirect("/inventory");
+}
+
+export async function deleteProduct(id: number) {
+  await prisma.product.delete({
+    where: {
+      id,
+    },
+  });
+
+  revalidatePath("/inventory");
+}
