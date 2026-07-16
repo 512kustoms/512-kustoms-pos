@@ -29,7 +29,7 @@ export async function checkoutSale(
     "INV-" + Date.now().toString();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await prisma.$transaction(async (tx: any) => {
+await prisma.$transaction(async (tx) => {
     const sale = await tx.sale.create({
       data: {
         invoiceNumber,
