@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 interface CheckoutItem {
@@ -28,7 +29,7 @@ export async function checkoutSale(
   const invoiceNumber =
     "INV-" + Date.now().toString();
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const sale = await tx.sale.create({
       data: {
         invoiceNumber,
