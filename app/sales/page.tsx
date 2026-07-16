@@ -4,16 +4,11 @@ import Cart from "@/components/sales/cart";
 import { prisma } from "@/lib/prisma";
 
 export default async function SalesPage() {
-  const products = await prisma.product.findMany({
-    where: {
-      quantity: {
-        gt: 0,
-      },
-    },
-    orderBy: {
-      name: "asc",
-    },
-  });
+const products = await prisma.product.findMany({
+  orderBy: {
+    name: "asc",
+  },
+});
 
   return (
     <AppShell>
