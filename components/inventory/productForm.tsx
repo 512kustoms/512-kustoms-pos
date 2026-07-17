@@ -90,7 +90,7 @@ export default function ProductForm({
             <select
               name="brandId"
               required
-              defaultValue={product?.locationId?.toString() ?? ""}
+              defaultValue={product?.brandId?.toString() ?? ""}
               className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white focus:border-violet-500 focus:outline-none"
             >
 
