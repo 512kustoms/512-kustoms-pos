@@ -1,12 +1,22 @@
+export interface Brand {
+  id: number;
+  name: string;
+}
+
+export interface Location {
+  id: number;
+  name: string;
+}
+
 export interface Product {
   id: number;
 
   name: string;
-  brand: string;
-  category: string;
 
-  sku: string;
-  barcode: string | null;
+  brandId: number | null;
+  brand: Brand | null;
+
+  category: string;
 
   cost: number;
   retail: number;
@@ -15,7 +25,9 @@ export interface Product {
   minimumStock: number;
 
   supplier: string | null;
-  shelfLocation: string | null;
+
+  locationId: number | null;
+  location: Location | null;
 
   image: string | null;
 
@@ -25,11 +37,10 @@ export interface Product {
 
 export interface CreateProduct {
   name: string;
-  brand: string;
-  category: string;
 
-  sku: string;
-  barcode?: string;
+  brandId: number | null;
+
+  category: string;
 
   cost: number;
   retail: number;
@@ -37,8 +48,11 @@ export interface CreateProduct {
   quantity: number;
   minimumStock: number;
 
-  supplier?: string;
-  shelfLocation?: string;
+  supplier?: string | null;
+
+  locationId: number | null;
 
   image?: string | null;
 }
+
+export type UpdateProduct = Partial<CreateProduct>;

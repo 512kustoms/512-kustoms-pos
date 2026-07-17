@@ -6,28 +6,31 @@ import { redirect } from "next/navigation";
 
 export async function addProduct(formData: FormData) {
   await prisma.product.create({
-data: {
-  name: String(formData.get("name")),
+    data: {
+      name: String(formData.get("name")),
 
-  brandId: Number(formData.get("brandId")),
+      brandId: formData.get("brandId")
+        ? Number(formData.get("brandId"))
+        : null,
 
-  category: String(formData.get("category")),
+      category: String(formData.get("category")),
 
-  cost: Number(formData.get("cost")),
-  retail: Number(formData.get("retail")),
+      cost: Number(formData.get("cost")),
+      retail: Number(formData.get("retail")),
 
-  quantity: Number(formData.get("quantity")),
-  minimumStock: Number(formData.get("minimumStock")),
+      quantity: Number(formData.get("quantity")),
+      minimumStock: Number(formData.get("minimumStock")),
 
-  supplier:
-    String(formData.get("supplier") || "") || null,
+      supplier: formData.get("supplier")
+        ? String(formData.get("supplier"))
+        : null,
 
-  locationId: formData.get("locationId")
-    ? Number(formData.get("locationId"))
-    : null,
+      locationId: formData.get("locationId")
+        ? Number(formData.get("locationId"))
+        : null,
 
-  image: null,
-},
+      image: null,
+    },
   });
 
   revalidatePath("/");
@@ -44,27 +47,29 @@ export async function updateProduct(formData: FormData) {
     where: {
       id,
     },
+    data: {
+      name: String(formData.get("name")),
 
-data: {
-  name: String(formData.get("name")),
+      brandId: formData.get("brandId")
+        ? Number(formData.get("brandId"))
+        : null,
 
-  brandId: Number(formData.get("brandId")),
+      category: String(formData.get("category")),
 
-  category: String(formData.get("category")),
+      cost: Number(formData.get("cost")),
+      retail: Number(formData.get("retail")),
 
-  cost: Number(formData.get("cost")),
-  retail: Number(formData.get("retail")),
+      quantity: Number(formData.get("quantity")),
+      minimumStock: Number(formData.get("minimumStock")),
 
-  quantity: Number(formData.get("quantity")),
-  minimumStock: Number(formData.get("minimumStock")),
+      supplier: formData.get("supplier")
+        ? String(formData.get("supplier"))
+        : null,
 
-  supplier:
-    String(formData.get("supplier") || "") || null,
-
-  locationId: formData.get("locationId")
-    ? Number(formData.get("locationId"))
-    : null,
-},
+      locationId: formData.get("locationId")
+        ? Number(formData.get("locationId"))
+        : null,
+    },
   });
 
   revalidatePath("/");
