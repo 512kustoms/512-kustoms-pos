@@ -74,10 +74,6 @@ export default function ProductSearch({
                 {product.brand}
               </p>
 
-              <p className="text-xs text-zinc-600">
-                SKU: {product.sku}
-              </p>
-
             </div>
 
             <div className="text-right">
