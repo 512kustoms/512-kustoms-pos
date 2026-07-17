@@ -15,14 +15,25 @@ import { prisma } from "@/lib/prisma";
 export default async function Dashboard() {
   const [products, customers, installJobs, sales] =
     await Promise.all([
-      prisma.product.findMany(),
+      prisma.product.findMany({
+        include: {
+          brand: true,
+          location: true,
+        },
+        orderBy: {
+          quantity: "desc",
+        },
+      }),
+
       prisma.customer.findMany(),
+
       prisma.installJob.findMany(),
+
       prisma.sale.findMany({
         orderBy: {
           createdAt: "desc",
         },
-        take: 5,
+        take: 10,
       }),
     ]);
 
@@ -64,8 +75,6 @@ export default async function Dashboard() {
 
       </div>
 
-      {/* KPI CARDS */}
-
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
 
         <StatCard
@@ -98,8 +107,6 @@ export default async function Dashboard() {
 
       </div>
 
-      {/* FINANCIALS */}
-
       <div className="grid gap-6 lg:grid-cols-3">
 
         <MoneyCard
@@ -123,8 +130,6 @@ export default async function Dashboard() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-
-        {/* LOW STOCK */}
 
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
 
@@ -165,7 +170,7 @@ export default async function Dashboard() {
                   </p>
 
                   <p className="text-sm text-zinc-500">
-                    {product.brand}
+                    {product.brand?.name ?? "No Brand"}
                   </p>
 
                 </div>
@@ -181,8 +186,6 @@ export default async function Dashboard() {
           </div>
 
         </div>
-
-        {/* QUICK ACTIONS */}
 
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
 
@@ -234,8 +237,6 @@ export default async function Dashboard() {
 
       </div>
 
-      {/* RECENT SALES */}
-
       <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
 
         <h2 className="mb-6 text-2xl font-bold text-white">
@@ -278,7 +279,6 @@ export default async function Dashboard() {
     </div>
   );
 }
-
 function StatCard({
   title,
   value,
@@ -291,23 +291,23 @@ function StatCard({
   color: string;
 }) {
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-lg">
 
       <div className="flex items-center justify-between">
 
         <div>
 
-          <p className="text-zinc-400">
+          <p className="text-sm uppercase tracking-wide text-zinc-400">
             {title}
           </p>
 
-          <h2 className="mt-3 text-4xl font-bold text-white">
+          <h2 className="mt-4 text-4xl font-bold text-white">
             {value}
           </h2>
 
         </div>
 
-        <div className={`${color} rounded-xl p-4 text-white`}>
+        <div className={`${color} rounded-xl p-4 text-white shadow-lg`}>
           {icon}
         </div>
 
@@ -327,14 +327,18 @@ function MoneyCard({
   color: string;
 }) {
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-lg">
 
-      <p className="text-zinc-400">
+      <p className="text-sm uppercase tracking-wide text-zinc-400">
         {title}
       </p>
 
       <h2 className={`mt-4 text-4xl font-bold ${color}`}>
-        ${value.toLocaleString()}
+        $
+        {value.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}
       </h2>
 
     </div>
@@ -353,10 +357,14 @@ function QuickButton({
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 rounded-xl bg-zinc-950 p-5 text-white transition hover:bg-violet-600"
+      className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950 p-5 text-white transition-all hover:border-violet-500 hover:bg-violet-600"
     >
       {icon}
-      <span className="font-semibold">{title}</span>
+
+      <span className="font-semibold">
+        {title}
+      </span>
+
     </Link>
   );
 }
