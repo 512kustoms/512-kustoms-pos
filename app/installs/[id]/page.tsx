@@ -1,7 +1,7 @@
 import AppShell from "@/components/layout/appshell";
+import AddInstallItem from "@/components/installs/addInstallItem";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import AddInstallItem from "@/components/installs/addInstallItem";
 
 interface Props {
   params: Promise<{
@@ -22,7 +22,12 @@ export default async function InstallJobPage({
       customer: true,
       items: {
         include: {
-          product: true,
+          product: {
+            include: {
+              brand: true,
+              location: true,
+            },
+          },
         },
       },
     },
@@ -36,14 +41,17 @@ export default async function InstallJobPage({
         gt: 0,
       },
     },
+    include: {
+      brand: true,
+      location: true,
+    },
     orderBy: {
       name: "asc",
     },
   });
 
   const partsTotal = job.items.reduce(
-    (sum, item) =>
-      sum + item.unitPrice * item.quantity,
+    (sum, item) => sum + item.unitPrice * item.quantity,
     0
   );
 
@@ -51,11 +59,8 @@ export default async function InstallJobPage({
 
   return (
     <AppShell>
-
       <div className="space-y-8">
-
         <div>
-
           <h1 className="text-4xl font-bold text-white">
             {job.title}
           </h1>
@@ -63,7 +68,6 @@ export default async function InstallJobPage({
           <p className="text-zinc-400">
             {job.vehicle}
           </p>
-
         </div>
 
         <AddInstallItem
@@ -72,13 +76,9 @@ export default async function InstallJobPage({
         />
 
         <div className="rounded-xl bg-zinc-900">
-
           <table className="w-full">
-
             <thead>
-
               <tr>
-
                 <th className="px-4 py-3 text-left">
                   Product
                 </th>
@@ -90,20 +90,15 @@ export default async function InstallJobPage({
                 <th className="px-4 py-3 text-right">
                   Price
                 </th>
-
               </tr>
-
             </thead>
 
             <tbody>
-
-              {job.items.map(item => (
-
+              {job.items.map((item) => (
                 <tr
                   key={item.id}
                   className="border-t border-zinc-800"
                 >
-
                   <td className="px-4 py-3">
                     {item.product.name}
                   </td>
@@ -116,53 +111,38 @@ export default async function InstallJobPage({
                     $
                     {(item.unitPrice * item.quantity).toFixed(2)}
                   </td>
-
                 </tr>
-
               ))}
-
             </tbody>
-
           </table>
-
         </div>
 
         <div className="rounded-xl bg-zinc-900 p-6">
-
           <div className="flex justify-between">
-
             <span>Parts</span>
 
             <span>
               ${partsTotal.toFixed(2)}
             </span>
-
           </div>
 
           <div className="mt-3 flex justify-between">
-
             <span>Labor</span>
 
             <span>
               ${job.laborCost.toFixed(2)}
             </span>
-
           </div>
 
           <div className="mt-6 flex justify-between border-t border-zinc-700 pt-4 text-2xl font-bold">
-
             <span>Total</span>
 
             <span>
               ${total.toFixed(2)}
             </span>
-
           </div>
-
         </div>
-
       </div>
-
     </AppShell>
   );
 }
