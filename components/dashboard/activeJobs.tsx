@@ -12,12 +12,16 @@ export default async function Dashboard() {
     installJobs,
     sales,
   ] = await Promise.all([
-    prisma.product.findMany({
-      orderBy: {
-        quantity: "desc",
-      },
-      take: 10,
-    }),
+prisma.product.findMany({
+  include: {
+    brand: true,
+    location: true,
+  },
+  orderBy: {
+    quantity: "desc",
+  },
+  take: 10,
+}),
 
     prisma.customer.findMany(),
 
@@ -222,9 +226,9 @@ export default async function Dashboard() {
                     {product.name}
                   </p>
 
-                  <p className="text-sm text-zinc-500">
-                    {product.brand}
-                  </p>
+<p className="text-sm text-zinc-500">
+  {product.brand?.name ?? "No Brand"}
+</p>
 
                 </div>
 
