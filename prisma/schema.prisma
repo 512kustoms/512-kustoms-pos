@@ -149,6 +149,7 @@ model Purchase {
   createdAt       DateTime @default(now())
 
   items           PurchaseItem[]
+  receivedAt DateTime?
 }
 
 enum PurchaseStatus {
@@ -187,3 +188,5 @@ enum OrderStatus {
   DELIVERED
   CANCELLED
 }
+
+
