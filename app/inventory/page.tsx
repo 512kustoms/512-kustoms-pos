@@ -4,11 +4,15 @@ import InventoryTable from "@/components/inventory/inventoryTable";
 import { prisma } from "@/lib/prisma";
 
 export default async function InventoryPage() {
-  const products = await prisma.product.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+const products = await prisma.product.findMany({
+  include: {
+    brand: true,
+    location: true,
+  },
+  orderBy: {
+    name: "asc",
+  },
+});
 
   return (
     <AppShell>
