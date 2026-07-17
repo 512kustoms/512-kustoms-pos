@@ -14,11 +14,27 @@ export default async function EditProductPage({
 }: Props) {
   const { id } = await params;
 
-  const product = await prisma.product.findUnique({
-    where: {
-      id: Number(id),
-    },
-  });
+  const [product, brands, locations] = await Promise.all([
+    prisma.product.findUnique({
+      where: {
+        id: Number(id),
+      },
+      include: {
+        brand: true,
+        location: true,
+      },
+    }),
+    prisma.brand.findMany({
+      orderBy: {
+        name: "asc",
+      },
+    }),
+    prisma.location.findMany({
+      orderBy: {
+        name: "asc",
+      },
+    }),
+  ]);
 
   if (!product) {
     notFound();
@@ -27,9 +43,7 @@ export default async function EditProductPage({
   return (
     <AppShell>
       <div className="space-y-6">
-
         <div>
-
           <h1 className="text-4xl font-bold text-white">
             Edit Product
           </h1>
@@ -37,11 +51,13 @@ export default async function EditProductPage({
           <p className="mt-2 text-zinc-400">
             Update product information.
           </p>
-
         </div>
 
-        <ProductForm product={product} />
-
+        <ProductForm
+          product={product}
+          brands={brands}
+          locations={locations}
+        />
       </div>
     </AppShell>
   );
