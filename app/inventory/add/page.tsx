@@ -1,7 +1,7 @@
 import AppShell from "@/components/layout/appshell";
 import ProductForm from "@/components/inventory/productForm";
 import { prisma } from "@/lib/prisma";
-
+export const dynamic = "force-dynamic";
 export default async function AddProductPage() {
 
   const brands = await prisma.brand.findMany({
