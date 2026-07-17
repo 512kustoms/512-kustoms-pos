@@ -36,55 +36,51 @@ export default async function InvoicePage({
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-7xl">
 
         <div className="mb-8 flex items-center justify-between">
 
           <div>
-
             <h1 className="text-4xl font-bold text-white">
               Invoice
             </h1>
 
-            <p className="text-zinc-400">
+            <p className="mt-1 text-zinc-400">
               {invoice.invoiceNumber}
             </p>
-
           </div>
 
           <div className="flex gap-3">
-
             <PrintButton />
 
             <Link
               href="/invoices"
-              className="rounded-lg bg-zinc-800 px-5 py-3 font-semibold text-white hover:bg-zinc-700"
+              className="rounded-xl bg-zinc-800 px-5 py-3 font-semibold text-white transition hover:bg-zinc-700"
             >
               Back
             </Link>
-
           </div>
 
         </div>
 
         <div
           id="invoice"
-          className="rounded-2xl border border-zinc-800 bg-zinc-900 p-10"
+          className="rounded-3xl border border-zinc-800 bg-zinc-900 p-12 shadow-2xl"
         >
 
-          <div className="flex justify-between">
+          <div className="flex items-start justify-between">
 
             <div>
 
-              <h2 className="text-5xl font-bold text-violet-500">
+              <h2 className="text-6xl font-black tracking-tight text-violet-500">
                 512 Kustoms
               </h2>
 
-              <p className="mt-2 text-zinc-400">
+              <p className="mt-3 text-lg text-zinc-300">
                 Car Audio • Security • Accessories
               </p>
 
-              <p className="text-zinc-400">
+              <p className="mt-2 text-lg text-zinc-300">
                 Phone: (737) 900-2906
               </p>
 
@@ -92,28 +88,28 @@ export default async function InvoicePage({
 
             <div className="text-right">
 
-              <h3 className="text-2xl font-bold text-white">
+              <h3 className="text-5xl font-black tracking-wide text-white">
                 INVOICE
               </h3>
 
-              <div className="mt-6 space-y-2">
+              <div className="mt-8 space-y-4 text-lg">
 
-                <p>
-                  <span className="font-semibold">
+                <p className="text-white">
+                  <span className="font-bold text-violet-400">
                     Number:
                   </span>{" "}
                   {invoice.invoiceNumber}
                 </p>
 
-                <p>
-                  <span className="font-semibold">
+                <p className="text-white">
+                  <span className="font-bold text-violet-400">
                     Date:
                   </span>{" "}
                   {invoice.createdAt.toLocaleDateString()}
                 </p>
 
-                <p>
-                  <span className="font-semibold">
+                <p className="text-white">
+                  <span className="font-bold text-violet-400">
                     Payment:
                   </span>{" "}
                   {invoice.paymentMethod}
@@ -125,37 +121,37 @@ export default async function InvoicePage({
 
           </div>
 
-          <div className="my-10 h-px bg-zinc-800" />
+          <div className="my-12 h-px bg-zinc-800" />
 
           <div className="grid grid-cols-2 gap-12">
 
             <div>
 
-              <h3 className="mb-3 text-lg font-bold text-white">
+              <h3 className="mb-4 text-2xl font-bold text-violet-400">
                 Bill To
               </h3>
 
               {invoice.customer ? (
                 <>
 
-                  <p className="text-lg text-white">
+                  <p className="text-2xl font-semibold text-white">
                     {invoice.customer.firstName}{" "}
                     {invoice.customer.lastName}
                   </p>
 
-                  <p className="text-zinc-400">
+                  <p className="mt-2 text-zinc-300">
                     {invoice.customer.phone}
                   </p>
 
                   {invoice.customer.email && (
-                    <p className="text-zinc-400">
+                    <p className="text-zinc-300">
                       {invoice.customer.email}
                     </p>
                   )}
 
                 </>
               ) : (
-                <p className="text-zinc-500">
+                <p className="text-xl text-zinc-300">
                   Walk-In Customer
                 </p>
               )}
@@ -164,41 +160,47 @@ export default async function InvoicePage({
 
             <div className="text-right">
 
-              <h3 className="mb-3 text-lg font-bold text-white">
+              <h3 className="mb-4 text-2xl font-bold text-violet-400">
                 Shop Information
               </h3>
 
-              <p>512 Kustoms</p>
+              <p className="text-xl text-white">
+                512 Kustoms
+              </p>
 
-              <p>Car Audio & Accessories</p>
+              <p className="text-zinc-300">
+                Car Audio & Accessories
+              </p>
 
-              <p>Austin, Texas</p>
+              <p className="text-zinc-300">
+                Austin, Texas
+              </p>
 
             </div>
 
           </div>
 
-          <div className="mt-10 overflow-hidden rounded-xl border border-zinc-800">
+          <div className="mt-12 overflow-hidden rounded-2xl border border-zinc-800">
 
             <table className="w-full">
 
-              <thead className="bg-zinc-950">
+              <thead className="bg-zinc-950 text-violet-400">
 
                 <tr>
 
-                  <th className="px-5 py-4 text-left">
+                  <th className="px-6 py-5 text-left text-lg font-bold">
                     Product
                   </th>
 
-                  <th className="px-5 py-4 text-center">
+                  <th className="px-6 py-5 text-center text-lg font-bold">
                     Qty
                   </th>
 
-                  <th className="px-5 py-4 text-right">
+                  <th className="px-6 py-5 text-right text-lg font-bold">
                     Price
                   </th>
 
-                  <th className="px-5 py-4 text-right">
+                  <th className="px-6 py-5 text-right text-lg font-bold">
                     Total
                   </th>
 
@@ -206,28 +208,28 @@ export default async function InvoicePage({
 
               </thead>
 
-              <tbody>
+              <tbody className="divide-y divide-zinc-800">
 
                 {invoice.items.map((item) => (
 
                   <tr
                     key={item.id}
-                    className="border-t border-zinc-800"
+                    className="transition hover:bg-zinc-800/40"
                   >
 
-                    <td className="px-5 py-4">
+                    <td className="px-6 py-5 text-lg font-medium text-white">
                       {item.product.name}
                     </td>
 
-                    <td className="px-5 py-4 text-center">
+                    <td className="px-6 py-5 text-center text-zinc-300">
                       {item.quantity}
                     </td>
 
-                    <td className="px-5 py-4 text-right">
+                    <td className="px-6 py-5 text-right text-zinc-300">
                       ${item.price.toFixed(2)}
                     </td>
 
-                    <td className="px-5 py-4 text-right font-semibold">
+                    <td className="px-6 py-5 text-right text-lg font-bold text-white">
                       $
                       {(item.quantity * item.price).toFixed(2)}
                     </td>
@@ -241,38 +243,39 @@ export default async function InvoicePage({
             </table>
 
           </div>
+          <div className="mt-12 flex justify-end">
 
-          <div className="mt-10 flex justify-end">
+            <div className="w-96 rounded-2xl border border-zinc-800 bg-zinc-950 p-8 shadow-xl">
 
-            <div className="w-80 rounded-xl bg-zinc-950 p-6">
-
-              <div className="mb-3 flex justify-between">
+              <div className="mb-4 flex justify-between text-lg text-zinc-300">
 
                 <span>Subtotal</span>
 
-                <span>
+                <span className="font-semibold text-white">
                   ${invoice.subtotal.toFixed(2)}
                 </span>
 
               </div>
 
-              <div className="mb-3 flex justify-between">
+              <div className="mb-4 flex justify-between text-lg text-zinc-300">
 
                 <span>Tax</span>
 
-                <span>
+                <span className="font-semibold text-white">
                   ${invoice.tax.toFixed(2)}
                 </span>
 
               </div>
 
-              <div className="mt-5 border-t border-zinc-700 pt-5">
+              <div className="border-t border-zinc-700 pt-6">
 
-                <div className="flex justify-between text-3xl font-bold">
+                <div className="flex items-center justify-between">
 
-                  <span>Total</span>
+                  <span className="text-3xl font-bold text-white">
+                    Total
+                  </span>
 
-                  <span className="text-green-500">
+                  <span className="text-4xl font-black text-green-400">
                     ${invoice.total.toFixed(2)}
                   </span>
 
@@ -284,15 +287,63 @@ export default async function InvoicePage({
 
           </div>
 
-          <div className="mt-16 text-center text-sm text-zinc-500">
+          <div className="mt-16 rounded-2xl border border-zinc-800 bg-zinc-950 p-8">
 
-            Thank you for choosing 512 Kustoms!
+            <h3 className="mb-4 text-xl font-bold text-violet-400">
+              Thank You!
+            </h3>
+
+            <p className="leading-8 text-zinc-300">
+              Thank you for choosing <span className="font-semibold text-white">512 Kustoms</span>.
+              We appreciate your business and look forward to serving you again.
+            </p>
+
+            <div className="mt-8 grid grid-cols-3 gap-6 text-center">
+
+              <div className="rounded-xl bg-zinc-900 p-5">
+
+                <p className="mb-2 text-sm uppercase tracking-widest text-zinc-500">
+                  Phone
+                </p>
+
+                <p className="font-semibold text-white">
+                  (737) 900-2906
+                </p>
+
+              </div>
+
+              <div className="rounded-xl bg-zinc-900 p-5">
+
+                <p className="mb-2 text-sm uppercase tracking-widest text-zinc-500">
+                  Business
+                </p>
+
+                <p className="font-semibold text-white">
+                  512 Kustoms
+                </p>
+
+              </div>
+
+              <div className="rounded-xl bg-zinc-900 p-5">
+
+                <p className="mb-2 text-sm uppercase tracking-widest text-zinc-500">
+                  Location
+                </p>
+
+                <p className="font-semibold text-white">
+                  Austin, Texas
+                </p>
+
+              </div>
+
+            </div>
 
           </div>
 
         </div>
 
       </div>
+
     </AppShell>
   );
 }

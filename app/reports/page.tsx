@@ -3,38 +3,39 @@ import SalesChart from "@/components/reports/salesChart";
 import { prisma } from "@/lib/prisma";
 
 export default async function ReportsPage() {
-
   const sales = await prisma.sale.findMany({
-    orderBy:{
-      createdAt:"asc",
+    orderBy: {
+      createdAt: "asc",
     },
   });
 
-  const chartData = sales.map((sale)=>({
+  const groupedSales = new Map<string, number>();
 
-    day: sale.createdAt.toLocaleDateString(),
+  for (const sale of sales) {
+    const day = sale.createdAt.toLocaleDateString();
 
-    sales: sale.total,
+    groupedSales.set(
+      day,
+      (groupedSales.get(day) ?? 0) + sale.total
+    );
+  }
 
-  }));
+  const chartData = Array.from(groupedSales.entries()).map(
+    ([day, sales]) => ({
+      day,
+      sales,
+    })
+  );
 
   return (
-
     <AppShell>
-
       <div className="space-y-8">
-
         <h1 className="text-4xl font-bold text-white">
           Reports
         </h1>
 
-        <SalesChart
-          data={chartData}
-        />
-
+        <SalesChart data={chartData} />
       </div>
-
     </AppShell>
-
   );
 }
