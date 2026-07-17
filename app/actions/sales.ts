@@ -21,12 +21,10 @@ interface CheckoutItem {
   vendorCost: number;
 }
 
-
 export async function checkoutSale(
   items: CheckoutItem[],
   paymentMethod: string,
   customerId?: number
-  
 ) {
   if (items.length === 0) {
     throw new Error("Cart is empty.");
@@ -45,22 +43,16 @@ export async function checkoutSale(
   const total = subtotal + tax;
 
   const invoiceNumber =
-    "INV-" +
-    Date.now().toString();
+    "INV-" + Date.now().toString();
 
   await prisma.$transaction(async (tx) => {
     const sale = await tx.sale.create({
       data: {
         invoiceNumber,
-
         subtotal,
-
         tax,
-
         total,
-
         paymentMethod,
-
         customerId: customerId ?? null,
       },
     });
@@ -86,10 +78,13 @@ export async function checkoutSale(
 
           notes: item.notes,
 
-          vendor: item.dropship ? item.vendor : null,
+          vendor: item.dropship
+            ? item.vendor
+            : null,
         },
       });
 
+      // Only reduce inventory for stock items
       if (!item.dropship) {
         await tx.product.update({
           where: {
@@ -104,33 +99,95 @@ export async function checkoutSale(
       }
     }
 
-    const dropshipItems = items.filter((item) => item.dropship);
+    // Automatically create Vendor Purchase Orders
+    // for all dropship items
+    const dropshipItems = items.filter(
+      (item) => item.dropship
+    );
 
     if (dropshipItems.length > 0) {
-      const vendorGroups = new Map<string, CheckoutItem[]>();
+      const vendorGroups = new Map<
+        string,
+        CheckoutItem[]
+      >();
 
       for (const item of dropshipItems) {
-        const group = vendorGroups.get(item.vendor) || [];
+        const group =
+          vendorGroups.get(item.vendor) ?? [];
+
         group.push(item);
-        vendorGroups.set(item.vendor, group);
+
+        vendorGroups.set(
+          item.vendor,
+          group
+        );
       }
 
-      for (const [vendor, vendorItems] of vendorGroups) {
-        const purchaseSubtotal = vendorItems.reduce(
-          (sum, item) => sum + item.vendorCost * item.quantity,
-          0
-        );
+      for (const [
+        vendor,
+        vendorItems,
+      ] of vendorGroups) {
+        const purchaseSubtotal =
+          vendorItems.reduce(
+            (sum, item) =>
+              sum +
+              item.vendorCost *
+                item.quantity,
+            0
+          );
 
-        const purchase = await tx.purchase.create({
-          data: {
-            purchaseNumber: "PO-" + Date.now().toString() + "-" + vendor.slice(0, 3).toUpperCase(),
-            supplier: vendor,
-            subtotal: purchaseSubtotal,
-            total: purchaseSubtotal,
-            notes: `Auto-generated from dropship sale ${invoiceNumber}`,
-          },
-        });
+        const saleTotal =
+          vendorItems.reduce(
+            (sum, item) =>
+              sum +
+              (item.price -
+                item.discount) *
+                item.quantity,
+            0
+          );
 
+        const profit =
+          saleTotal -
+          purchaseSubtotal;
+
+        const vendorCode =
+          vendor.trim().length > 0
+            ? vendor
+                .slice(0, 3)
+                .toUpperCase()
+            : "GEN";
+
+        const purchase =
+          await tx.purchase.create({
+            data: {
+              purchaseNumber:
+                "PO-" +
+                Date.now().toString() +
+                "-" +
+                vendorCode,
+
+              supplier: vendor,
+
+              subtotal:
+                purchaseSubtotal,
+
+              total:
+                purchaseSubtotal,
+
+              status: "PENDING",
+
+              paid: true,
+
+              paidAmount:
+                purchaseSubtotal,
+
+              paidAt: new Date(),
+
+              profit,
+
+              notes: `Auto-generated from dropship sale ${invoiceNumber}`,
+            },
+          });
         for (const item of vendorItems) {
           await tx.purchaseItem.create({
             data: {
@@ -141,30 +198,18 @@ export async function checkoutSale(
             },
           });
 
-          await tx.product.update({
-            where: {
-              id: item.id,
-            },
-            data: {
-              cost: item.vendorCost,
-            },
-          });
+          // No inventory updates here because these
+          // are dropship items and never enter stock.
         }
       }
     }
   });
 
   revalidatePath("/");
-
   revalidatePath("/dashboard");
-
   revalidatePath("/inventory");
-
   revalidatePath("/sales");
-
   revalidatePath("/customers");
-
   revalidatePath("/invoices");
-
   revalidatePath("/purchases");
 }

@@ -136,11 +136,25 @@ model Purchase {
   subtotal        Float
   total           Float
 
+  status          PurchaseStatus @default(PENDING)
+
+  paid            Boolean @default(true)
+  paidAmount      Float
+  paidAt          DateTime @default(now())
+
+  profit          Float @default(0)
+
   notes           String?
 
   createdAt       DateTime @default(now())
 
   items           PurchaseItem[]
+}
+
+enum PurchaseStatus {
+  PENDING
+  RECEIVED
+  CANCELLED
 }
 
 model PurchaseItem {
