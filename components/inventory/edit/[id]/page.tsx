@@ -3,7 +3,7 @@ import ProductForm from "@/components/inventory/productForm";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 
-interface PageProps {
+interface Props {
   params: Promise<{
     id: string;
   }>;
@@ -11,7 +11,7 @@ interface PageProps {
 
 export default async function EditProductPage({
   params,
-}: PageProps) {
+}: Props) {
   const { id } = await params;
 
   const product = await prisma.product.findUnique({
@@ -29,6 +29,7 @@ export default async function EditProductPage({
       <div className="space-y-6">
 
         <div>
+
           <h1 className="text-4xl font-bold text-white">
             Edit Product
           </h1>
@@ -36,6 +37,7 @@ export default async function EditProductPage({
           <p className="mt-2 text-zinc-400">
             Update product information.
           </p>
+
         </div>
 
         <ProductForm product={product} />
