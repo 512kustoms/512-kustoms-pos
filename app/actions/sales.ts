@@ -19,6 +19,7 @@ interface CheckoutItem {
 
   vendor: string;
   vendorCost: number;
+  vendorShipping: number;
 }
 
 export async function checkoutSale(
@@ -84,7 +85,7 @@ export async function checkoutSale(
         },
       });
 
-      // Only reduce inventory for stock items
+      // Reduce inventory only for stocked items
       if (!item.dropship) {
         await tx.product.update({
           where: {
@@ -99,8 +100,7 @@ export async function checkoutSale(
       }
     }
 
-    // Automatically create Vendor Purchase Orders
-    // for all dropship items
+    // Auto-create Purchase Orders for Dropship Items
     const dropshipItems = items.filter(
       (item) => item.dropship
     );
@@ -127,6 +127,7 @@ export async function checkoutSale(
         vendor,
         vendorItems,
       ] of vendorGroups) {
+
         const purchaseSubtotal =
           vendorItems.reduce(
             (sum, item) =>
@@ -135,6 +136,12 @@ export async function checkoutSale(
                 item.quantity,
             0
           );
+
+        const shipping =
+          vendorItems[0]?.vendorShipping ?? 0;
+
+        const totalCost =
+          purchaseSubtotal + shipping;
 
         const saleTotal =
           vendorItems.reduce(
@@ -147,8 +154,7 @@ export async function checkoutSale(
           );
 
         const profit =
-          saleTotal -
-          purchaseSubtotal;
+          saleTotal - totalCost;
 
         const vendorCode =
           vendor.trim().length > 0
@@ -156,7 +162,6 @@ export async function checkoutSale(
                 .slice(0, 3)
                 .toUpperCase()
             : "GEN";
-
         const purchase =
           await tx.purchase.create({
             data: {
@@ -171,15 +176,17 @@ export async function checkoutSale(
               subtotal:
                 purchaseSubtotal,
 
+              shipping,
+
               total:
-                purchaseSubtotal,
+                totalCost,
 
               status: "PENDING",
 
               paid: true,
 
               paidAmount:
-                purchaseSubtotal,
+                totalCost,
 
               paidAt: new Date(),
 
@@ -188,18 +195,22 @@ export async function checkoutSale(
               notes: `Auto-generated from dropship sale ${invoiceNumber}`,
             },
           });
+
         for (const item of vendorItems) {
           await tx.purchaseItem.create({
             data: {
               purchaseId: purchase.id,
+
               productId: item.id,
+
               quantity: item.quantity,
+
               unitCost: item.vendorCost,
             },
           });
 
-          // No inventory updates here because these
-          // are dropship items and never enter stock.
+          // Dropship items never enter inventory,
+          // so inventory is NOT updated here.
         }
       }
     }

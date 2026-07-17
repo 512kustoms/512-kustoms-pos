@@ -2,8 +2,8 @@
 
 import {
   ResponsiveContainer,
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   CartesianGrid,
   XAxis,
   YAxis,
@@ -13,22 +13,22 @@ import {
 interface Props {
   data: {
     day: string;
-    sales: number;
+    profit: number;
   }[];
 }
 
-export default function SalesChart({
+export default function ProfitChart({
   data,
 }: Props) {
   return (
     <div className="h-96 rounded-xl bg-zinc-900 p-6">
 
       <h2 className="mb-6 text-2xl font-bold text-white">
-        Sales (Last 7 Days)
+        Profit (Daily)
       </h2>
 
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data}>
+        <LineChart data={data}>
 
           <CartesianGrid stroke="#3f3f46" />
 
@@ -41,13 +41,15 @@ export default function SalesChart({
 
           <Tooltip />
 
-          <Bar
-            dataKey="sales"
-            radius={[6,6,0,0]}
-            fill="#7c3aed"
+          <Line
+            type="monotone"
+            dataKey="profit"
+            stroke="#22c55e"
+            strokeWidth={3}
+            dot={{ r: 4 }}
           />
 
-        </BarChart>
+        </LineChart>
       </ResponsiveContainer>
 
     </div>

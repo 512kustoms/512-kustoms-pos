@@ -54,7 +54,9 @@ export default function Cart({
   const updateVendorCost = useCartStore(
     (state) => state.updateVendorCost
   );
-
+const updateVendorShipping = useCartStore(
+  (state) => state.updateVendorShipping
+);
   const subtotal = useCartStore((state) =>
     state.subtotal()
   );
@@ -75,11 +77,15 @@ export default function Cart({
   async function handleCheckout() {
     if (items.length === 0) return;
 
-    const missingVendorInfo = items.some(
-      (item) =>
-        item.dropship &&
-        (!item.vendor.trim() || item.vendorCost <= 0)
-    );
+const missingVendorInfo = items.some(
+  (item) =>
+    item.dropship &&
+    (
+      !item.vendor.trim() ||
+      item.vendorCost <= 0 ||
+      item.vendorShipping < 0
+    )
+);
 
     if (missingVendorInfo) {
       alert(
@@ -269,6 +275,25 @@ export default function Cart({
                 <div>
                   <label className="mb-1 block text-sm text-zinc-400">
                     Vendor Cost (per unit)
+                    <div>
+  <label className="mb-1 block text-sm text-zinc-400">
+    Vendor Shipping
+  </label>
+
+  <input
+    type="number"
+    min={0}
+    step="0.01"
+    value={item.vendorShipping}
+    onChange={(e) =>
+      updateVendorShipping(
+        item.vendor,
+        Number(e.target.value)
+      )
+    }
+    className="w-full rounded-lg border border-zinc-700 bg-zinc-900 p-2 text-white"
+  />
+</div>
                   </label>
                   <input
                     type="number"

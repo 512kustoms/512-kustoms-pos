@@ -15,6 +15,7 @@ export interface CartItem {
 
   vendor: string;
   vendorCost: number;
+  vendorShipping: number;
 }
 
 interface CartStore {
@@ -23,7 +24,12 @@ interface CartStore {
   addItem: (
     item: Omit<
       CartItem,
-      "discount" | "notes" | "dropship" | "vendor" | "vendorCost"
+      | "discount"
+      | "notes"
+      | "dropship"
+      | "vendor"
+      | "vendorCost"
+      | "vendorShipping"
     >,
     dropship?: boolean
   ) => void;
@@ -39,6 +45,11 @@ interface CartStore {
 
   updateVendor: (id: number, vendor: string) => void;
   updateVendorCost: (id: number, vendorCost: number) => void;
+
+  updateVendorShipping: (
+    vendor: string,
+    shipping: number
+  ) => void;
 
   removeItem: (id: number) => void;
   clearCart: () => void;
@@ -78,6 +89,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
             dropship,
             vendor: "",
             vendorCost: 0,
+            vendorShipping: 0,
           },
         ],
       };
@@ -176,6 +188,18 @@ export const useCartStore = create<CartStore>((set, get) => ({
           ? {
               ...item,
               vendorCost,
+            }
+          : item
+      ),
+    })),
+
+  updateVendorShipping: (vendor, shipping) =>
+    set((state) => ({
+      items: state.items.map((item) =>
+        item.vendor === vendor
+          ? {
+              ...item,
+              vendorShipping: shipping,
             }
           : item
       ),

@@ -127,29 +127,29 @@ model InstallItem {
   product        Product    @relation(fields: [productId], references: [id])
 }
 model Purchase {
-  id              Int      @id @default(autoincrement())
+  id             Int      @id @default(autoincrement())
 
-  purchaseNumber  String   @unique
+  purchaseNumber String   @unique
+  supplier       String
 
-  supplier        String
+  subtotal       Float
+  shipping       Float @default(0)
+  total          Float
 
-  subtotal        Float
-  total           Float
+  status         PurchaseStatus @default(PENDING)
 
-  status          PurchaseStatus @default(PENDING)
+  paid           Boolean @default(true)
+  paidAmount     Float
+  paidAt         DateTime @default(now())
 
-  paid            Boolean @default(true)
-  paidAmount      Float
-  paidAt          DateTime @default(now())
+  profit         Float @default(0)
 
-  profit          Float @default(0)
+  notes          String?
 
-  notes           String?
+  createdAt      DateTime @default(now())
+  receivedAt     DateTime?
 
-  createdAt       DateTime @default(now())
-
-  items           PurchaseItem[]
-  receivedAt DateTime?
+  items          PurchaseItem[]
 }
 
 enum PurchaseStatus {
