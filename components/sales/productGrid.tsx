@@ -32,36 +32,49 @@ export default function ProductGrid({ products }: Props) {
       />
 
       <div className="grid grid-cols-3 gap-4">
-        {filteredProducts.map((product) => (
-          <button
-            key={product.id}
-            onClick={() =>
-              addItem({
-                id: product.id,
-                name: product.name,
-                price: product.retail,
-                quantity: 1,
-              })
-            }
-            className="rounded-xl border border-zinc-700 bg-zinc-950 p-4 text-left transition hover:border-violet-500 hover:bg-zinc-800"
-          >
-            <h2 className="font-semibold text-white">
-              {product.name}
-            </h2>
+        {filteredProducts.map((product) => {
+          const outOfStock = product.quantity <= 0;
 
-            <p className="text-sm text-zinc-400">
-              {product.brand}
-            </p>
+          return (
+            <button
+              key={product.id}
+              onClick={() =>
+                addItem(
+                  {
+                    id: product.id,
+                    name: product.name,
+                    price: product.retail,
+                    quantity: 1,
+                  },
+                  outOfStock
+                )
+              }
+              className="relative rounded-xl border border-zinc-700 bg-zinc-950 p-4 text-left transition hover:border-violet-500 hover:bg-zinc-800"
+            >
+              {outOfStock && (
+                <span className="absolute right-3 top-3 rounded-full bg-amber-600 px-2 py-0.5 text-xs font-semibold text-white">
+                  Dropship Only
+                </span>
+              )}
 
-            <p className="mt-3 text-xl font-bold text-violet-500">
-              ${product.retail.toFixed(2)}
-            </p>
+              <h2 className="font-semibold text-white">
+                {product.name}
+              </h2>
 
-            <p className="mt-2 text-xs text-zinc-500">
-              Qty: {product.quantity}
-            </p>
-          </button>
-        ))}
+              <p className="text-sm text-zinc-400">
+                {product.brand}
+              </p>
+
+              <p className="mt-3 text-xl font-bold text-violet-500">
+                ${product.retail.toFixed(2)}
+              </p>
+
+              <p className="mt-2 text-xs text-zinc-500">
+                Qty: {product.quantity}
+              </p>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

@@ -18,9 +18,10 @@ export interface CartItem {
 interface CartStore {
   items: CartItem[];
 
-  addItem: (
-    item: Omit<CartItem, "discount" | "notes" | "dropship">
-  ) => void;
+addItem: (
+  item: Omit<CartItem, "discount" | "notes" | "dropship">,
+  dropship?: boolean
+) => void;
 
   increaseQuantity: (id: number) => void;
 
@@ -57,37 +58,37 @@ interface CartStore {
 export const useCartStore = create<CartStore>((set, get) => ({
   items: [],
 
-  addItem: (item) =>
-    set((state) => {
-      const existing = state.items.find(
-        (i) => i.id === item.id
-      );
+addItem: (item, dropship = false) =>
+  set((state) => {
+    const existing = state.items.find(
+      (i) => i.id === item.id
+    );
 
-      if (existing) {
-        return {
-          items: state.items.map((i) =>
-            i.id === item.id
-              ? {
-                  ...i,
-                  quantity: i.quantity + 1,
-                }
-              : i
-          ),
-        };
-      }
-
+    if (existing) {
       return {
-        items: [
-          ...state.items,
-          {
-            ...item,
-            discount: 0,
-            notes: "",
-            dropship: false,
-          },
-        ],
+        items: state.items.map((i) =>
+          i.id === item.id
+            ? {
+                ...i,
+                quantity: i.quantity + 1,
+              }
+            : i
+        ),
       };
-    }),
+    }
+
+    return {
+      items: [
+        ...state.items,
+        {
+          ...item,
+          discount: 0,
+          notes: "",
+          dropship,
+        },
+      ],
+    };
+  }),
 
   increaseQuantity: (id) =>
     set((state) => ({
