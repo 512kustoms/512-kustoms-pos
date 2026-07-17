@@ -1,18 +1,30 @@
 import Link from "next/link";
+import {
+  Boxes,
+  Users,
+  DollarSign,
+  PackageX,
+  Wrench,
+  ShoppingCart,
+  Plus,
+  ClipboardList,
+  FileBarChart2,
+} from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
 export default async function Dashboard() {
-  const [
-    products,
-    customers,
-    installJobs,
-    sales,
-  ] = await Promise.all([
-    prisma.product.findMany(),
-    prisma.customer.findMany(),
-    prisma.installJob.findMany(),
-    prisma.sale.findMany(),
-  ]);
+  const [products, customers, installJobs, sales] =
+    await Promise.all([
+      prisma.product.findMany(),
+      prisma.customer.findMany(),
+      prisma.installJob.findMany(),
+      prisma.sale.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 5,
+      }),
+    ]);
 
   const inventoryValue = products.reduce(
     (sum, p) => sum + p.cost * p.quantity,
@@ -24,8 +36,8 @@ export default async function Dashboard() {
     0
   );
 
-  const totalRevenue = sales.reduce(
-    (sum, sale) => sum + sale.total,
+  const revenue = sales.reduce(
+    (sum, s) => sum + s.total,
     0
   );
 
@@ -36,101 +48,97 @@ export default async function Dashboard() {
   return (
     <div className="space-y-8">
 
-      <div>
-        <h1 className="text-4xl font-bold text-white">
-          Dashboard
-        </h1>
+      <div className="flex items-center justify-between">
 
-        <p className="text-zinc-400">
-          Welcome to 512 Kustoms Management
-        </p>
+        <div>
+
+          <h1 className="text-4xl font-bold text-white">
+            Welcome Back 👋
+          </h1>
+
+          <p className="mt-2 text-zinc-400">
+            512 Kustoms Management Dashboard
+          </p>
+
+        </div>
+
       </div>
 
-      {/* Stats */}
+      {/* KPI CARDS */}
 
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
 
-        <Card
+        <StatCard
           title="Products"
           value={products.length}
-          color="text-violet-400"
+          icon={<Boxes size={28} />}
+          color="bg-violet-600"
         />
 
-        <Card
+        <StatCard
           title="Customers"
           value={customers.length}
-          color="text-cyan-400"
+          icon={<Users size={28} />}
+          color="bg-cyan-600"
         />
 
-        <Card
+        <StatCard
           title="Install Jobs"
           value={installJobs.length}
-          color="text-orange-400"
+          icon={<Wrench size={28} />}
+          color="bg-orange-600"
         />
 
-        <Card
+        <StatCard
           title="Sales"
           value={sales.length}
+          icon={<ShoppingCart size={28} />}
+          color="bg-green-600"
+        />
+
+      </div>
+
+      {/* FINANCIALS */}
+
+      <div className="grid gap-6 lg:grid-cols-3">
+
+        <MoneyCard
+          title="Inventory Value"
+          value={inventoryValue}
           color="text-green-400"
         />
 
-      </div>
+        <MoneyCard
+          title="Retail Value"
+          value={retailValue}
+          color="text-violet-400"
+        />
 
-      <div className="grid grid-cols-3 gap-6">
-
-        <div className="rounded-xl bg-zinc-900 p-6">
-
-          <h2 className="mb-4 text-xl font-bold text-white">
-            Inventory Value
-          </h2>
-
-          <p className="text-4xl font-bold text-green-500">
-            ${inventoryValue.toLocaleString()}
-          </p>
-
-        </div>
-
-        <div className="rounded-xl bg-zinc-900 p-6">
-
-          <h2 className="mb-4 text-xl font-bold text-white">
-            Retail Value
-          </h2>
-
-          <p className="text-4xl font-bold text-violet-500">
-            ${retailValue.toLocaleString()}
-          </p>
-
-        </div>
-
-        <div className="rounded-xl bg-zinc-900 p-6">
-
-          <h2 className="mb-4 text-xl font-bold text-white">
-            Revenue
-          </h2>
-
-          <p className="text-4xl font-bold text-cyan-400">
-            ${totalRevenue.toLocaleString()}
-          </p>
-
-        </div>
+        <MoneyCard
+          title="Revenue"
+          value={revenue}
+          color="text-cyan-400"
+        />
 
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid gap-6 lg:grid-cols-2">
 
-        <div className="rounded-xl bg-zinc-900 p-6">
+        {/* LOW STOCK */}
+
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
 
           <div className="mb-6 flex items-center justify-between">
 
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-2xl font-bold text-white">
               Low Stock
             </h2>
 
             <Link
               href="/inventory"
-              className="text-violet-500"
+              className="text-violet-400 hover:text-violet-300"
             >
-              View All
+              View Inventory
             </Link>
 
           </div>
@@ -139,7 +147,7 @@ export default async function Dashboard() {
 
             {lowStock.length === 0 && (
               <p className="text-zinc-500">
-                Everything is stocked.
+                Everything is fully stocked.
               </p>
             )}
 
@@ -147,15 +155,23 @@ export default async function Dashboard() {
 
               <div
                 key={product.id}
-                className="flex justify-between rounded-lg bg-zinc-950 p-3"
+                className="flex items-center justify-between rounded-xl bg-zinc-950 p-4"
               >
 
-                <span className="text-white">
-                  {product.name}
-                </span>
+                <div>
 
-                <span className="text-red-500">
-                  {product.quantity}
+                  <p className="font-semibold text-white">
+                    {product.name}
+                  </p>
+
+                  <p className="text-sm text-zinc-500">
+                    {product.brand}
+                  </p>
+
+                </div>
+
+                <span className="rounded-full bg-red-600 px-3 py-1 text-sm font-semibold text-white">
+                  Qty {product.quantity}
                 </span>
 
               </div>
@@ -166,47 +182,94 @@ export default async function Dashboard() {
 
         </div>
 
-        <div className="rounded-xl bg-zinc-900 p-6">
+        {/* QUICK ACTIONS */}
 
-          <div className="mb-6 flex items-center justify-between">
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
 
-            <h2 className="text-xl font-bold text-white">
-              Quick Actions
-            </h2>
-
-          </div>
+          <h2 className="mb-6 text-2xl font-bold text-white">
+            Quick Actions
+          </h2>
 
           <div className="grid grid-cols-2 gap-4">
 
-            <Link
+            <QuickButton
               href="/sales"
-              className="rounded-lg bg-violet-600 p-5 text-center font-semibold text-white hover:bg-violet-700"
-            >
-              New Sale
-            </Link>
+              title="New Sale"
+              icon={<DollarSign size={22} />}
+            />
 
-            <Link
+            <QuickButton
               href="/inventory/add"
-              className="rounded-lg bg-zinc-800 p-5 text-center text-white hover:bg-zinc-700"
-            >
-              Add Product
-            </Link>
+              title="Add Product"
+              icon={<Plus size={22} />}
+            />
 
-            <Link
+            <QuickButton
               href="/customers/add"
-              className="rounded-lg bg-zinc-800 p-5 text-center text-white hover:bg-zinc-700"
-            >
-              New Customer
-            </Link>
+              title="Customer"
+              icon={<Users size={22} />}
+            />
 
-            <Link
-              href="/installs/new"
-              className="rounded-lg bg-zinc-800 p-5 text-center text-white hover:bg-zinc-700"
-            >
-              New Install
-            </Link>
+            <QuickButton
+              href="/reports"
+              title="Reports"
+              icon={<FileBarChart2 size={22} />}
+            />
+
+            <QuickButton
+              href="/purchases"
+              title="Purchase Orders"
+              icon={<ClipboardList size={22} />}
+            />
+
+            <QuickButton
+              href="/inventory"
+              title="Inventory"
+              icon={<PackageX size={22} />}
+            />
 
           </div>
+
+        </div>
+
+      </div>
+
+      {/* RECENT SALES */}
+
+      <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+
+        <h2 className="mb-6 text-2xl font-bold text-white">
+          Recent Sales
+        </h2>
+
+        <div className="space-y-3">
+
+          {sales.map((sale) => (
+
+            <div
+              key={sale.id}
+              className="flex items-center justify-between rounded-xl bg-zinc-950 p-4"
+            >
+
+              <div>
+
+                <p className="font-semibold text-white">
+                  {sale.invoiceNumber}
+                </p>
+
+                <p className="text-sm text-zinc-500">
+                  {sale.paymentMethod}
+                </p>
+
+              </div>
+
+              <p className="text-xl font-bold text-green-400">
+                ${sale.total.toFixed(2)}
+              </p>
+
+            </div>
+
+          ))}
 
         </div>
 
@@ -216,7 +279,45 @@ export default async function Dashboard() {
   );
 }
 
-function Card({
+function StatCard({
+  title,
+  value,
+  icon,
+  color,
+}: {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+  color: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+
+      <div className="flex items-center justify-between">
+
+        <div>
+
+          <p className="text-zinc-400">
+            {title}
+          </p>
+
+          <h2 className="mt-3 text-4xl font-bold text-white">
+            {value}
+          </h2>
+
+        </div>
+
+        <div className={`${color} rounded-xl p-4 text-white`}>
+          {icon}
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
+function MoneyCard({
   title,
   value,
   color,
@@ -226,16 +327,36 @@ function Card({
   color: string;
 }) {
   return (
-    <div className="rounded-xl bg-zinc-900 p-6">
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
 
       <p className="text-zinc-400">
         {title}
       </p>
 
-      <h2 className={`mt-3 text-4xl font-bold ${color}`}>
-        {value}
+      <h2 className={`mt-4 text-4xl font-bold ${color}`}>
+        ${value.toLocaleString()}
       </h2>
 
     </div>
+  );
+}
+
+function QuickButton({
+  href,
+  title,
+  icon,
+}: {
+  href: string;
+  title: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-3 rounded-xl bg-zinc-950 p-5 text-white transition hover:bg-violet-600"
+    >
+      {icon}
+      <span className="font-semibold">{title}</span>
+    </Link>
   );
 }
