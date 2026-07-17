@@ -1,11 +1,28 @@
 import AppShell from "@/components/layout/appshell";
 import ProductForm from "@/components/inventory/productForm";
+import { prisma } from "@/lib/prisma";
 
-export default function AddProductPage() {
+export default async function AddProductPage() {
+
+  const brands = await prisma.brand.findMany({
+    orderBy: {
+      name: "asc",
+    },
+  });
+
+  const locations = await prisma.location.findMany({
+    orderBy: {
+      name: "asc",
+    },
+  });
+
   return (
     <AppShell>
-      <div className="mx-auto max-w-5xl space-y-8">
+
+      <div className="space-y-6">
+
         <div>
+
           <h1 className="text-4xl font-bold text-white">
             Add Product
           </h1>
@@ -13,10 +30,16 @@ export default function AddProductPage() {
           <p className="mt-2 text-zinc-400">
             Create a new inventory item.
           </p>
+
         </div>
 
-        <ProductForm />
+        <ProductForm
+          brands={brands}
+          locations={locations}
+        />
+
       </div>
+
     </AppShell>
   );
 }

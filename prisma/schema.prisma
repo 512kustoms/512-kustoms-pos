@@ -10,11 +10,11 @@ model Product {
   id            Int      @id @default(autoincrement())
 
   name          String
-  brand         String
-  category      String
 
-  sku           String   @unique
-  barcode       String?
+  brandId       Int?
+  brand         Brand?   @relation(fields: [brandId], references: [id])
+
+  category      String
 
   cost          Float
   retail        Float
@@ -23,7 +23,9 @@ model Product {
   minimumStock  Int
 
   supplier      String?
-  shelfLocation String?
+
+  locationId    Int?
+  location      Location? @relation(fields: [locationId], references: [id])
 
   image         String?
 
@@ -188,5 +190,14 @@ enum OrderStatus {
   DELIVERED
   CANCELLED
 }
+model Brand {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  products  Product[]
+}
 
-
+model Location {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  products  Product[]
+}

@@ -6,29 +6,34 @@ import { redirect } from "next/navigation";
 
 export async function addProduct(formData: FormData) {
   await prisma.product.create({
-    data: {
-      name: String(formData.get("name")),
-      brand: String(formData.get("brand")),
-      category: String(formData.get("category")),
+data: {
+  name: String(formData.get("name")),
 
-      sku: String(formData.get("sku")),
-      barcode: String(formData.get("barcode") || ""),
+  brandId: Number(formData.get("brandId")),
 
-      cost: Number(formData.get("cost")),
-      retail: Number(formData.get("retail")),
+  category: String(formData.get("category")),
 
-      quantity: Number(formData.get("quantity")),
-      minimumStock: Number(formData.get("minimumStock")),
+  cost: Number(formData.get("cost")),
+  retail: Number(formData.get("retail")),
 
-      supplier: String(formData.get("supplier") || "") || null,
-      shelfLocation: String(formData.get("shelfLocation") || "") || null,
-      image: null,
-    },
+  quantity: Number(formData.get("quantity")),
+  minimumStock: Number(formData.get("minimumStock")),
+
+  supplier:
+    String(formData.get("supplier") || "") || null,
+
+  locationId: formData.get("locationId")
+    ? Number(formData.get("locationId"))
+    : null,
+
+  image: null,
+},
   });
 
   revalidatePath("/");
   revalidatePath("/inventory");
   revalidatePath("/sales");
+
   redirect("/inventory");
 }
 
@@ -39,28 +44,36 @@ export async function updateProduct(formData: FormData) {
     where: {
       id,
     },
-    data: {
-      name: String(formData.get("name")),
-      brand: String(formData.get("brand")),
-      category: String(formData.get("category")),
 
-      sku: String(formData.get("sku")),
-      barcode: String(formData.get("barcode") || ""),
+data: {
+  name: String(formData.get("name")),
 
-      cost: Number(formData.get("cost")),
-      retail: Number(formData.get("retail")),
+  brandId: Number(formData.get("brandId")),
 
-      quantity: Number(formData.get("quantity")),
-      minimumStock: Number(formData.get("minimumStock")),
+  category: String(formData.get("category")),
 
-      supplier: String(formData.get("supplier") || "") || null,
-      shelfLocation: String(formData.get("shelfLocation") || "") || null,
-    },
+  sku: String(formData.get("sku")),
+  barcode: String(formData.get("barcode") || ""),
+
+  cost: Number(formData.get("cost")),
+  retail: Number(formData.get("retail")),
+
+  quantity: Number(formData.get("quantity")),
+  minimumStock: Number(formData.get("minimumStock")),
+
+  supplier:
+    String(formData.get("supplier") || "") || null,
+
+  locationId: formData.get("locationId")
+    ? Number(formData.get("locationId"))
+    : null,
+},
   });
 
   revalidatePath("/");
   revalidatePath("/inventory");
   revalidatePath("/sales");
+
   redirect("/inventory");
 }
 

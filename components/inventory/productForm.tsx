@@ -1,6 +1,11 @@
 "use client";
 
-import type { Product } from "@prisma/client";
+import type {
+  Product,
+  Brand,
+  Location,
+} from "@prisma/client";
+
 import {
   addProduct,
   updateProduct,
@@ -8,100 +13,127 @@ import {
 
 interface ProductFormProps {
   product?: Product;
+  brands: Brand[];
+  locations: Location[];
 }
 
 export default function ProductForm({
   product,
+  brands,
+  locations,
 }: ProductFormProps) {
 
-  const action = product ? updateProduct : addProduct;
+  const action = product
+    ? updateProduct
+    : addProduct;
 
   return (
-    <form action={action} className="space-y-8">
+
+    <form
+      action={action}
+      className="space-y-8"
+    >
 
       {product && (
+
         <input
           type="hidden"
           name="id"
           value={product.id}
         />
+
       )}
 
-      {/* Product Information */}
+      {/* PRODUCT INFORMATION */}
 
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+      <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
 
         <h2 className="mb-6 text-2xl font-bold text-white">
           Product Information
         </h2>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid gap-6 md:grid-cols-2">
+
+          {/* Product Name */}
 
           <div>
+
             <label className="mb-2 block text-sm text-zinc-400">
               Product Name
             </label>
 
             <input
               name="name"
+              required
               defaultValue={product?.name}
-              required
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white"
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white focus:border-violet-500 focus:outline-none"
             />
+
           </div>
 
-          <div>
-            <label className="mb-2 block text-sm text-zinc-400">
-              Brand
-            </label>
+          {/* Brand */}
 
-            <input
-              name="brand"
-              defaultValue={product?.brand}
+          <div>
+
+            <div className="mb-2 flex items-center justify-between">
+
+              <label className="text-sm text-zinc-400">
+                Brand
+              </label>
+
+              <span className="text-xs text-violet-400">
+                Managed List
+              </span>
+
+            </div>
+
+            <select
+              name="brandId"
               required
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white"
-            />
+              defaultValue={product?.locationId?.toString() ?? ""}
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white focus:border-violet-500 focus:outline-none"
+            >
+
+              <option value="">
+                Select Brand
+              </option>
+
+              {brands.map((brand) => (
+
+                <option
+                  key={brand.id}
+                  value={brand.id}
+                >
+                  {brand.name}
+                </option>
+
+              ))}
+
+            </select>
+
           </div>
 
+          {/* Category */}
+
           <div>
+
             <label className="mb-2 block text-sm text-zinc-400">
               Category
             </label>
 
             <input
               name="category"
+              required
               defaultValue={product?.category}
-              required
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white"
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white focus:border-violet-500 focus:outline-none"
             />
+
           </div>
 
-          <div>
-            <label className="mb-2 block text-sm text-zinc-400">
-              SKU
-            </label>
-
-            <input
-              name="sku"
-              defaultValue={product?.sku}
-              required
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white"
-            />
-          </div>
+          {/* Supplier */}
 
           <div>
-            <label className="mb-2 block text-sm text-zinc-400">
-              Barcode
-            </label>
 
-            <input
-              name="barcode"
-              defaultValue={product?.barcode ?? ""}
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white"
-            />
-          </div>
-
-          <div>
             <label className="mb-2 block text-sm text-zinc-400">
               Supplier
             </label>
@@ -109,25 +141,26 @@ export default function ProductForm({
             <input
               name="supplier"
               defaultValue={product?.supplier ?? ""}
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white"
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white focus:border-violet-500 focus:outline-none"
             />
+
           </div>
 
         </div>
 
       </div>
+      {/* PRICING */}
 
-      {/* Pricing */}
-
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+      <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
 
         <h2 className="mb-6 text-2xl font-bold text-white">
           Pricing
         </h2>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid gap-6 md:grid-cols-2">
 
           <div>
+
             <label className="mb-2 block text-sm text-zinc-400">
               Cost
             </label>
@@ -136,42 +169,48 @@ export default function ProductForm({
               type="number"
               step="0.01"
               name="cost"
-              defaultValue={product?.cost}
               required
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white"
+              defaultValue={product?.cost}
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white focus:border-violet-500 focus:outline-none"
             />
+
           </div>
 
           <div>
+
             <label className="mb-2 block text-sm text-zinc-400">
-              Retail
+              Retail Price
             </label>
 
             <input
               type="number"
               step="0.01"
               name="retail"
-              defaultValue={product?.retail}
               required
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white"
+              defaultValue={product?.retail}
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white focus:border-violet-500 focus:outline-none"
             />
+
           </div>
 
         </div>
 
       </div>
 
-      {/* Inventory */}
+      {/* INVENTORY */}
 
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+      <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
 
         <h2 className="mb-6 text-2xl font-bold text-white">
           Inventory
         </h2>
 
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid gap-6 md:grid-cols-3">
+
+          {/* Quantity */}
 
           <div>
+
             <label className="mb-2 block text-sm text-zinc-400">
               Quantity
             </label>
@@ -179,13 +218,17 @@ export default function ProductForm({
             <input
               type="number"
               name="quantity"
-              defaultValue={product?.quantity}
               required
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white"
+              defaultValue={product?.quantity}
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white focus:border-violet-500 focus:outline-none"
             />
+
           </div>
 
+          {/* Minimum Stock */}
+
           <div>
+
             <label className="mb-2 block text-sm text-zinc-400">
               Minimum Stock
             </label>
@@ -193,46 +236,82 @@ export default function ProductForm({
             <input
               type="number"
               name="minimumStock"
-              defaultValue={product?.minimumStock}
               required
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white"
+              defaultValue={product?.minimumStock}
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white focus:border-violet-500 focus:outline-none"
             />
+
           </div>
 
-          <div>
-            <label className="mb-2 block text-sm text-zinc-400">
-              Shelf Location
-            </label>
+          {/* Shelf Location */}
 
-            <input
-              name="shelfLocation"
-              defaultValue={product?.shelfLocation ?? ""}
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white"
-            />
+          <div>
+
+            <div className="mb-2 flex items-center justify-between">
+
+              <label className="text-sm text-zinc-400">
+                Shelf Location
+              </label>
+
+              <span className="text-xs text-violet-400">
+                Managed List
+              </span>
+
+            </div>
+
+            <select
+              name="locationId"
+              defaultValue={product?.locationId ?? ""}
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white focus:border-violet-500 focus:outline-none"
+            >
+
+              <option value="">
+                No Location
+              </option>
+
+              {locations.map((location) => (
+
+                <option
+                  key={location.id}
+                  value={location.id}
+                >
+                  {location.name}
+                </option>
+
+              ))}
+
+            </select>
+
           </div>
 
         </div>
 
       </div>
 
-      <div className="flex justify-end gap-4">
+      {/* BUTTONS */}
+
+      <div className="flex items-center justify-end gap-4 border-t border-zinc-800 pt-6">
 
         <button
           type="reset"
-          className="rounded-lg bg-zinc-700 px-6 py-3 font-semibold text-white hover:bg-zinc-600"
+          className="rounded-xl bg-zinc-700 px-6 py-3 font-semibold text-white transition hover:bg-zinc-600"
         >
-          Clear
+          Reset
         </button>
 
         <button
           type="submit"
-          className="rounded-lg bg-violet-600 px-6 py-3 font-semibold text-white hover:bg-violet-700"
+          className="rounded-xl bg-violet-600 px-8 py-3 font-semibold text-white transition hover:bg-violet-700"
         >
-          {product ? "Update Product" : "Save Product"}
+          {product
+            ? "Update Product"
+            : "Save Product"}
         </button>
 
       </div>
 
     </form>
+
   );
+
 }
