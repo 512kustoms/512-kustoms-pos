@@ -1,104 +1,119 @@
 import AppShell from "@/components/layout/appshell";
-import SalesChart from "@/components/reports/salesChart";
+import ProfitChart from "@/components/reports/profitChart";
 import { prisma } from "@/lib/prisma";
 
-export default async function SalesReportsPage() {
-  const sales = await prisma.sale.findMany({
+export default async function ProfitReportsPage() {
+  const purchases = await prisma.purchase.findMany({
     orderBy: {
       createdAt: "asc",
     },
   });
 
-  const salesByDay = new Map<string, number>();
+  const profitByDay = new Map<string, number>();
 
-  for (const sale of sales) {
-    const day = sale.createdAt.toLocaleDateString();
+  for (const purchase of purchases) {
+    const day = purchase.createdAt.toLocaleDateString();
 
-    salesByDay.set(
+    profitByDay.set(
       day,
-      (salesByDay.get(day) ?? 0) + sale.total
+      (profitByDay.get(day) ?? 0) + purchase.profit
     );
   }
 
-  const chartData = Array.from(salesByDay.entries()).map(
-    ([day, sales]) => ({
+  const chartData = Array.from(profitByDay.entries()).map(
+    ([day, profit]) => ({
       day,
-      sales,
+      profit,
     })
   );
 
-  const revenue = sales.reduce(
-    (sum, sale) => sum + sale.total,
+  const vendorCost = purchases.reduce(
+    (sum, purchase) => sum + purchase.subtotal,
     0
   );
 
-  const orders = sales.length;
+  const shippingPaid = purchases.reduce(
+    (sum, purchase) => sum + purchase.shipping,
+    0
+  );
 
-  const averageSale =
-    orders > 0 ? revenue / orders : 0;
+  const grossProfit = purchases.reduce(
+    (sum, purchase) => sum + purchase.profit,
+    0
+  );
+
+  const revenue =
+    vendorCost + shippingPaid + grossProfit;
+
+  const margin =
+    revenue > 0
+      ? (grossProfit / revenue) * 100
+      : 0;
 
   return (
     <AppShell>
       <div className="space-y-8">
 
         <div>
-
           <h1 className="text-4xl font-bold text-white">
-            Sales Reports
+            Profit Reports
           </h1>
 
           <p className="mt-2 text-zinc-400">
-            View sales performance and revenue history.
+            View business profit and expenses.
           </p>
-
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
 
           <div className="rounded-xl bg-zinc-900 p-6">
-
             <p className="text-zinc-400">
-              Total Revenue
+              Gross Profit
             </p>
 
             <h2 className="mt-3 text-4xl font-bold text-green-500">
-              ${revenue.toFixed(2)}
+              ${grossProfit.toFixed(2)}
             </h2>
-
           </div>
 
           <div className="rounded-xl bg-zinc-900 p-6">
-
             <p className="text-zinc-400">
-              Orders
+              Vendor Cost
             </p>
 
-            <h2 className="mt-3 text-4xl font-bold text-violet-500">
-              {orders}
+            <h2 className="mt-3 text-4xl font-bold text-red-500">
+              ${vendorCost.toFixed(2)}
             </h2>
-
           </div>
 
           <div className="rounded-xl bg-zinc-900 p-6">
-
             <p className="text-zinc-400">
-              Average Sale
+              Shipping Paid
             </p>
 
-            <h2 className="mt-3 text-4xl font-bold text-cyan-500">
-              ${averageSale.toFixed(2)}
+            <h2 className="mt-3 text-4xl font-bold text-orange-500">
+              ${shippingPaid.toFixed(2)}
             </h2>
+          </div>
 
+          <div className="rounded-xl bg-zinc-900 p-6">
+            <p className="text-zinc-400">
+              Profit Margin
+            </p>
+
+            <h2 className="mt-3 text-4xl font-bold text-cyan-400">
+              {margin.toFixed(2)}%
+            </h2>
           </div>
 
         </div>
 
-        <SalesChart data={chartData} />
+        <ProfitChart data={chartData} />
 
         <div className="rounded-xl bg-zinc-900 p-6">
 
           <h2 className="mb-6 text-2xl font-bold text-white">
-            Recent Sales
+            Purchase Profit History
           </h2>
 
           <div className="overflow-x-auto">
@@ -110,19 +125,23 @@ export default async function SalesReportsPage() {
                 <tr className="border-b border-zinc-700">
 
                   <th className="px-4 py-3 text-left text-zinc-400">
-                    Invoice
+                    Purchase #
                   </th>
 
                   <th className="px-4 py-3 text-left text-zinc-400">
-                    Date
-                  </th>
-
-                  <th className="px-4 py-3 text-left text-zinc-400">
-                    Payment
+                    Supplier
                   </th>
 
                   <th className="px-4 py-3 text-right text-zinc-400">
-                    Total
+                    Cost
+                  </th>
+
+                  <th className="px-4 py-3 text-right text-zinc-400">
+                    Shipping
+                  </th>
+
+                  <th className="px-4 py-3 text-right text-zinc-400">
+                    Profit
                   </th>
 
                 </tr>
@@ -131,30 +150,34 @@ export default async function SalesReportsPage() {
 
               <tbody>
 
-                {sales
+                {purchases
                   .slice()
                   .reverse()
-                  .map((sale) => (
+                  .map((purchase) => (
 
                     <tr
-                      key={sale.id}
+                      key={purchase.id}
                       className="border-b border-zinc-800 hover:bg-zinc-800/40"
                     >
 
                       <td className="px-4 py-3 text-white">
-                        {sale.invoiceNumber}
+                        {purchase.purchaseNumber}
                       </td>
 
                       <td className="px-4 py-3 text-zinc-300">
-                        {sale.createdAt.toLocaleDateString()}
+                        {purchase.supplier}
                       </td>
 
-                      <td className="px-4 py-3 text-zinc-300">
-                        {sale.paymentMethod}
+                      <td className="px-4 py-3 text-right text-red-400">
+                        ${purchase.subtotal.toFixed(2)}
+                      </td>
+
+                      <td className="px-4 py-3 text-right text-orange-400">
+                        ${purchase.shipping.toFixed(2)}
                       </td>
 
                       <td className="px-4 py-3 text-right font-bold text-green-500">
-                        ${sale.total.toFixed(2)}
+                        ${purchase.profit.toFixed(2)}
                       </td>
 
                     </tr>
