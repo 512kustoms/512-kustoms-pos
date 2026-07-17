@@ -199,7 +199,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
       0
     ),
 
-  tax: () => get().subtotal() * 0.0825,
+  tax: () => 0,
 
-  total: () => get().subtotal() + get().tax(),
+  total: () => get().subtotal(),
 }));
