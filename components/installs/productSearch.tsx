@@ -1,11 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Product } from "@prisma/client";
+import type { Product, Brand, Location } from "@prisma/client";
+
+type ProductWithRelations = Product & {
+  brand: Brand | null;
+  location: Location | null;
+};
 
 interface Props {
-  products: Product[];
-  onSelect: (product: Product) => void;
+  products: ProductWithRelations[];
+  onSelect: (product: ProductWithRelations) => void;
 }
 
 export default function ProductSearch({
@@ -15,15 +20,16 @@ export default function ProductSearch({
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
-    if (!search) return products;
+    if (!search.trim()) return products;
+
+    const value = search.toLowerCase();
 
     return products.filter((product) => {
-      const value = search.toLowerCase();
-
       return (
         product.name.toLowerCase().includes(value) ||
-        product.brand.toLowerCase().includes(value) ||
-        product.sku.toLowerCase().includes(value)
+        product.category.toLowerCase().includes(value) ||
+        (product.brand?.name.toLowerCase().includes(value) ?? false) ||
+        (product.supplier?.toLowerCase().includes(value) ?? false)
       );
     });
   }, [products, search]);
@@ -40,12 +46,18 @@ export default function ProductSearch({
 
       <div className="max-h-80 overflow-y-auto rounded-lg border border-zinc-800">
 
+        {filtered.length === 0 && (
+          <div className="p-4 text-center text-zinc-500">
+            No products found.
+          </div>
+        )}
+
         {filtered.map((product) => (
           <button
             key={product.id}
             type="button"
             onClick={() => onSelect(product)}
-            className="flex w-full justify-between border-b border-zinc-800 p-4 text-left hover:bg-zinc-800"
+            className="flex w-full justify-between border-b border-zinc-800 p-4 text-left transition hover:bg-zinc-800"
           >
             <div>
 
@@ -54,7 +66,7 @@ export default function ProductSearch({
               </h3>
 
               <p className="text-sm text-zinc-500">
-                {product.brand}
+                {product.brand?.name ?? "No Brand"}
               </p>
 
             </div>

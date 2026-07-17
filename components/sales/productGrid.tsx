@@ -1,11 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Product } from "@prisma/client";
+import type { Product, Brand, Location } from "@prisma/client";
 import { useCartStore } from "@/store/cartStore";
 
+type ProductWithRelations = Product & {
+  brand: Brand | null;
+  location: Location | null;
+};
+
 interface Props {
-  products: Product[];
+  products: ProductWithRelations[];
 }
 
 export default function ProductGrid({ products }: Props) {
@@ -14,10 +19,12 @@ export default function ProductGrid({ products }: Props) {
 
   const filteredProducts = products.filter((product) => {
     const query = search.toLowerCase();
+
     return (
       product.name.toLowerCase().includes(query) ||
-      product.brand.toLowerCase().includes(query) ||
-      product.sku.toLowerCase().includes(query)
+      product.category.toLowerCase().includes(query) ||
+      (product.brand?.name.toLowerCase().includes(query) ?? false) ||
+      (product.supplier?.toLowerCase().includes(query) ?? false)
     );
   });
 
@@ -38,6 +45,7 @@ export default function ProductGrid({ products }: Props) {
           return (
             <button
               key={product.id}
+              type="button"
               onClick={() =>
                 addItem(
                   {
@@ -62,14 +70,20 @@ export default function ProductGrid({ products }: Props) {
               </h2>
 
               <p className="text-sm text-zinc-400">
-                {product.brand}
+                {product.brand?.name ?? "No Brand"}
               </p>
 
               <p className="mt-3 text-xl font-bold text-violet-500">
                 ${product.retail.toFixed(2)}
               </p>
 
-              <p className="mt-2 text-xs text-zinc-500">
+              <p
+                className={
+                  product.quantity <= product.minimumStock
+                    ? "mt-2 text-xs text-red-500"
+                    : "mt-2 text-xs text-zinc-500"
+                }
+              >
                 Qty: {product.quantity}
               </p>
             </button>

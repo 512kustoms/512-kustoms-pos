@@ -1,12 +1,17 @@
 "use client";
 
 import { Pencil, Trash2 } from "lucide-react";
-import type { Product } from "@prisma/client";
+import type { Product, Brand, Location } from "@prisma/client";
 import Link from "next/link";
 import { deleteProduct } from "../../app/actions/products";
 
+type ProductWithRelations = Product & {
+  brand: Brand | null;
+  location: Location | null;
+};
+
 interface Props {
-  products: Product[];
+  products: ProductWithRelations[];
 }
 
 export default function InventoryTable({ products }: Props) {
@@ -28,10 +33,6 @@ export default function InventoryTable({ products }: Props) {
             <tr>
 
               <th className="px-4 py-4 text-left text-sm font-semibold text-zinc-300">
-                SKU
-              </th>
-
-              <th className="px-4 py-4 text-left text-sm font-semibold text-zinc-300">
                 Product
               </th>
 
@@ -41,6 +42,10 @@ export default function InventoryTable({ products }: Props) {
 
               <th className="px-4 py-4 text-left text-sm font-semibold text-zinc-300">
                 Category
+              </th>
+
+              <th className="px-4 py-4 text-left text-sm font-semibold text-zinc-300">
+                Location
               </th>
 
               <th className="px-4 py-4 text-center text-sm font-semibold text-zinc-300">
@@ -74,23 +79,18 @@ export default function InventoryTable({ products }: Props) {
           <tbody>
 
             {products.map((product) => {
-
               const profit = product.retail - product.cost;
+
               const margin =
                 product.cost > 0
                   ? (profit / product.cost) * 100
                   : 0;
 
               return (
-
                 <tr
                   key={product.id}
                   className="border-t border-zinc-800 transition-colors hover:bg-zinc-800/60"
                 >
-
-                  <td className="px-4 py-4 text-zinc-300">
-                    {product.sku}
-                  </td>
 
                   <td className="px-4 py-4">
 
@@ -101,11 +101,15 @@ export default function InventoryTable({ products }: Props) {
                   </td>
 
                   <td className="px-4 py-4 text-zinc-300">
-                    {product.brand}
+                    {product.brand?.name ?? "No Brand"}
                   </td>
 
                   <td className="px-4 py-4 text-zinc-300">
                     {product.category}
+                  </td>
+
+                  <td className="px-4 py-4 text-zinc-300">
+                    {product.location?.name ?? "-"}
                   </td>
 
                   <td className="px-4 py-4 text-center">
@@ -145,17 +149,13 @@ export default function InventoryTable({ products }: Props) {
                   <td className="px-4 py-4 text-center">
 
                     {product.quantity <= product.minimumStock ? (
-
                       <span className="rounded-full bg-red-600 px-3 py-1 text-xs font-semibold text-white">
                         LOW STOCK
                       </span>
-
                     ) : (
-
                       <span className="rounded-full bg-green-600 px-3 py-1 text-xs font-semibold text-white">
                         IN STOCK
                       </span>
-
                     )}
 
                   </td>
@@ -183,12 +183,10 @@ export default function InventoryTable({ products }: Props) {
                   </td>
 
                 </tr>
-
               );
             })}
 
             {products.length === 0 && (
-
               <tr>
 
                 <td
@@ -199,7 +197,6 @@ export default function InventoryTable({ products }: Props) {
                 </td>
 
               </tr>
-
             )}
 
           </tbody>

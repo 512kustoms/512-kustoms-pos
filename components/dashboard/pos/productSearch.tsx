@@ -1,20 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import type { Product, Brand, Location } from "@prisma/client";
 import { useCartStore } from "@/store/cartStore";
 
-interface Product {
-  id: number;
-  name: string;
-  brand: string;
-  sku: string;
-  barcode: string | null;
-  retail: number;
-  quantity: number;
-}
+type ProductWithRelations = Product & {
+  brand: Brand | null;
+  location: Location | null;
+};
 
 interface Props {
-  products: Product[];
+  products: ProductWithRelations[];
 }
 
 export default function ProductSearch({
@@ -25,15 +21,15 @@ export default function ProductSearch({
   const addItem = useCartStore((state) => state.addItem);
 
   const filtered = useMemo(() => {
-    if (!search) return products;
+    if (!search.trim()) return products;
 
     const value = search.toLowerCase();
 
     return products.filter((product) =>
       product.name.toLowerCase().includes(value) ||
-      product.brand.toLowerCase().includes(value) ||
-      product.sku.toLowerCase().includes(value) ||
-      (product.barcode ?? "").includes(value)
+      product.category.toLowerCase().includes(value) ||
+      (product.brand?.name.toLowerCase().includes(value) ?? false) ||
+      (product.supplier?.toLowerCase().includes(value) ?? false)
     );
   }, [products, search]);
 
@@ -41,7 +37,7 @@ export default function ProductSearch({
     <div className="space-y-4">
 
       <input
-        placeholder="Search product, SKU or barcode..."
+        placeholder="Search products..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-white outline-none focus:border-violet-500"
@@ -53,6 +49,7 @@ export default function ProductSearch({
 
           <button
             key={product.id}
+            type="button"
             onClick={() =>
               addItem({
                 id: product.id,
@@ -71,7 +68,7 @@ export default function ProductSearch({
               </h3>
 
               <p className="text-sm text-zinc-500">
-                {product.brand}
+                {product.brand?.name ?? "No Brand"}
               </p>
 
             </div>
@@ -84,7 +81,7 @@ export default function ProductSearch({
 
               <p
                 className={
-                  product.quantity <= 0
+                  product.quantity <= product.minimumStock
                     ? "text-red-500 text-sm"
                     : "text-zinc-400 text-sm"
                 }

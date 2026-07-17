@@ -1,13 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import type { Product } from "@prisma/client";
+import type { Product, Brand, Location } from "@prisma/client";
 import ProductSearch from "./productSearch";
 import { addInstallItem } from "@/app/actions/installJobs";
 
+type ProductWithRelations = Product & {
+  brand: Brand | null;
+  location: Location | null;
+};
+
 interface Props {
   installId: number;
-  products: Product[];
+  products: ProductWithRelations[];
 }
 
 export default function AddInstallItem({
@@ -15,7 +20,7 @@ export default function AddInstallItem({
   products,
 }: Props) {
   const [selectedProduct, setSelectedProduct] =
-    useState<Product | null>(null);
+    useState<ProductWithRelations | null>(null);
 
   const [quantity, setQuantity] = useState(1);
 
@@ -43,7 +48,7 @@ export default function AddInstallItem({
               </h3>
 
               <p className="text-zinc-400">
-                {selectedProduct.brand}
+                {selectedProduct.brand?.name ?? "No Brand"}
               </p>
 
             </div>

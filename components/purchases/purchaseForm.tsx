@@ -3,23 +3,22 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
+import type { Product, Brand, Location } from "@prisma/client";
 import { usePurchaseStore } from "@/store/purchaseStore";
 import { createPurchase } from "@/app/actions/purchases";
 
-interface Product {
-  id: number;
-  name: string;
-  brand: string;
-  sku: string;
-  cost: number;
-}
+type ProductWithRelations = Product & {
+  brand: Brand | null;
+  location: Location | null;
+};
 
 interface Props {
-  products: Product[];
+  products: ProductWithRelations[];
 }
 
 export default function PurchaseForm({ products }: Props) {
   const router = useRouter();
+
   const items = usePurchaseStore((state) => state.items);
   const addItem = usePurchaseStore((state) => state.addItem);
   const updateQuantity = usePurchaseStore((state) => state.updateQuantity);
@@ -33,12 +32,14 @@ export default function PurchaseForm({ products }: Props) {
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const filteredProducts = products.filter((p) => {
-    const query = search.toLowerCase();
+  const filteredProducts = products.filter((product) => {
+    const value = search.toLowerCase();
+
     return (
-      p.name.toLowerCase().includes(query) ||
-      p.brand.toLowerCase().includes(query) ||
-      p.sku.toLowerCase().includes(query)
+      product.name.toLowerCase().includes(value) ||
+      product.category.toLowerCase().includes(value) ||
+      (product.brand?.name.toLowerCase().includes(value) ?? false) ||
+      (product.supplier?.toLowerCase().includes(value) ?? false)
     );
   });
 
@@ -49,17 +50,19 @@ export default function PurchaseForm({ products }: Props) {
 
     await createPurchase(
       supplier,
-      items.map((i) => ({
-        productId: i.productId,
-        quantity: i.quantity,
-        unitCost: i.unitCost,
+      items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        unitCost: item.unitCost,
       })),
       notes
     );
 
     clearItems();
+
     setSupplier("");
     setNotes("");
+
     setSubmitting(false);
 
     router.push("/purchases");
@@ -83,9 +86,12 @@ export default function PurchaseForm({ products }: Props) {
         />
 
         <div className="max-h-[500px] space-y-2 overflow-auto">
+
           {filteredProducts.map((product) => (
+
             <button
               key={product.id}
+              type="button"
               onClick={() =>
                 addItem({
                   productId: product.id,
@@ -93,22 +99,29 @@ export default function PurchaseForm({ products }: Props) {
                   unitCost: product.cost,
                 })
               }
-              className="flex w-full items-center justify-between rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-left hover:border-violet-500 hover:bg-zinc-800"
+              className="flex w-full items-center justify-between rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-left transition hover:border-violet-500 hover:bg-zinc-800"
             >
+
               <div>
+
                 <p className="font-semibold text-white">
                   {product.name}
                 </p>
+
                 <p className="text-sm text-zinc-500">
-                  {product.brand} • {product.sku}
+                  {product.brand?.name ?? "No Brand"}
                 </p>
+
               </div>
 
               <p className="text-zinc-400">
-                Last cost: ${product.cost.toFixed(2)}
+                Last Cost: ${product.cost.toFixed(2)}
               </p>
+
             </button>
+
           ))}
+
         </div>
 
       </div>
@@ -120,9 +133,11 @@ export default function PurchaseForm({ products }: Props) {
         </h2>
 
         <div className="mb-4">
+
           <label className="mb-1 block text-sm text-zinc-400">
             Supplier
           </label>
+
           <input
             type="text"
             value={supplier}
@@ -130,6 +145,7 @@ export default function PurchaseForm({ products }: Props) {
             placeholder="Supplier name"
             className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white"
           />
+
         </div>
 
         <div className="mb-4 max-h-[350px] space-y-3 overflow-auto">
@@ -141,89 +157,130 @@ export default function PurchaseForm({ products }: Props) {
           )}
 
           {items.map((item) => (
+
             <div
               key={item.productId}
               className="rounded-lg border border-zinc-700 bg-zinc-950 p-3"
             >
+
               <div className="mb-2 flex items-center justify-between">
+
                 <p className="font-semibold text-white">
                   {item.name}
                 </p>
+
                 <button
+                  type="button"
                   onClick={() => removeItem(item.productId)}
                   className="text-red-500 hover:text-red-400"
                 >
                   <Trash2 size={16} />
                 </button>
+
               </div>
 
               <div className="flex items-center gap-3">
+
                 <div className="flex-1">
+
                   <label className="mb-1 block text-xs text-zinc-500">
                     Qty
                   </label>
+
                   <input
                     type="number"
                     min={1}
                     value={item.quantity}
                     onChange={(e) =>
-                      updateQuantity(item.productId, Number(e.target.value))
+                      updateQuantity(
+                        item.productId,
+                        Number(e.target.value)
+                      )
                     }
                     className="w-full rounded-lg border border-zinc-700 bg-zinc-900 p-2 text-center text-white"
                   />
+
                 </div>
 
                 <div className="flex-1">
+
                   <label className="mb-1 block text-xs text-zinc-500">
                     Unit Cost
                   </label>
+
                   <input
                     type="number"
                     min={0}
                     step="0.01"
                     value={item.unitCost}
                     onChange={(e) =>
-                      updateUnitCost(item.productId, Number(e.target.value))
+                      updateUnitCost(
+                        item.productId,
+                        Number(e.target.value)
+                      )
                     }
                     className="w-full rounded-lg border border-zinc-700 bg-zinc-900 p-2 text-center text-white"
                   />
+
                 </div>
 
                 <div className="flex-1 text-right">
+
                   <label className="mb-1 block text-xs text-zinc-500">
                     Line Total
                   </label>
+
                   <p className="font-bold text-green-500">
-                    ${(item.quantity * item.unitCost).toFixed(2)}
+                    $
+                    {(item.quantity * item.unitCost).toFixed(2)}
                   </p>
+
                 </div>
+
               </div>
+
             </div>
+
           ))}
 
         </div>
 
         <div className="mb-4">
+
           <label className="mb-1 block text-sm text-zinc-400">
             Notes
           </label>
+
           <textarea
-            rows={2}
+            rows={3}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 text-white"
           />
+
         </div>
 
         <div className="mb-4 flex justify-between border-t border-zinc-700 pt-4 text-2xl font-bold">
-          <span>Total</span>
-          <span className="text-green-500">${total.toFixed(2)}</span>
+
+          <span className="text-white">
+            Total
+          </span>
+
+          <span className="text-green-500">
+            ${total.toFixed(2)}
+          </span>
+
         </div>
 
         <button
+          type="button"
           onClick={handleSubmit}
-          disabled={items.length === 0 || !supplier.trim() || submitting}
-          className="w-full rounded-lg bg-violet-600 py-4 font-bold text-white hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={
+            items.length === 0 ||
+            !supplier.trim() ||
+            submitting
+          }
+          className="w-full rounded-lg bg-violet-600 py-4 font-bold text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {submitting ? "Saving..." : "Record Purchase"}
         </button>
