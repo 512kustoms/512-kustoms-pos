@@ -3,6 +3,7 @@ import {
   Boxes,
   Users,
   ShoppingCart,
+  Truck,
   FileText,
   Wrench,
   BarChart3,
@@ -29,6 +30,11 @@ export const navigation = [
     name: "Sales",
     href: "/sales",
     icon: ShoppingCart,
+  },
+  {
+    name: "Purchases",
+    href: "/purchases",
+    icon: Truck,
   },
   {
     name: "Invoices",

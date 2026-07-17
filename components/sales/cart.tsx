@@ -47,6 +47,14 @@ export default function Cart({
     (state) => state.toggleDropship
   );
 
+  const updateVendor = useCartStore(
+    (state) => state.updateVendor
+  );
+
+  const updateVendorCost = useCartStore(
+    (state) => state.updateVendorCost
+  );
+
   const subtotal = useCartStore((state) =>
     state.subtotal()
   );
@@ -63,8 +71,22 @@ export default function Cart({
     useState("Cash");
   const [customerId, setCustomerId] =
   useState<number | undefined>();
+
   async function handleCheckout() {
     if (items.length === 0) return;
+
+    const missingVendorInfo = items.some(
+      (item) =>
+        item.dropship &&
+        (!item.vendor.trim() || item.vendorCost <= 0)
+    );
+
+    if (missingVendorInfo) {
+      alert(
+        "Please enter a vendor name and vendor cost for all dropship items."
+      );
+      return;
+    }
 
     await checkoutSale(
     items,
@@ -226,6 +248,46 @@ export default function Cart({
 
             </div>
 
+            {item.dropship && (
+              <div className="mt-4 space-y-3 rounded-lg border border-amber-700 bg-amber-950/30 p-3">
+
+                <div>
+                  <label className="mb-1 block text-sm text-zinc-400">
+                    Vendor Name
+                  </label>
+                  <input
+                    type="text"
+                    value={item.vendor}
+                    onChange={(e) =>
+                      updateVendor(item.id, e.target.value)
+                    }
+                    placeholder="e.g. Sonic Electronix"
+                    className="w-full rounded-lg border border-zinc-700 bg-zinc-900 p-2 text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm text-zinc-400">
+                    Vendor Cost (per unit)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={item.vendorCost}
+                    onChange={(e) =>
+                      updateVendorCost(
+                        item.id,
+                        Number(e.target.value)
+                      )
+                    }
+                    className="w-full rounded-lg border border-zinc-700 bg-zinc-900 p-2 text-white"
+                  />
+                </div>
+
+              </div>
+            )}
+
           </div>
 
         ))}
@@ -290,16 +352,6 @@ export default function Cart({
 
           <span>
             ${subtotal.toFixed(2)}
-          </span>
-
-        </div>
-
-        <div className="flex justify-between">
-
-          <span>Tax</span>
-
-          <span>
-            ${tax.toFixed(2)}
           </span>
 
         </div>

@@ -9,86 +9,79 @@ export interface CartItem {
   quantity: number;
 
   discount: number;
-
   notes: string;
 
   dropship: boolean;
+
+  vendor: string;
+  vendorCost: number;
 }
 
 interface CartStore {
   items: CartItem[];
 
-addItem: (
-  item: Omit<CartItem, "discount" | "notes" | "dropship">,
-  dropship?: boolean
-) => void;
+  addItem: (
+    item: Omit<
+      CartItem,
+      "discount" | "notes" | "dropship" | "vendor" | "vendorCost"
+    >,
+    dropship?: boolean
+  ) => void;
 
   increaseQuantity: (id: number) => void;
-
   decreaseQuantity: (id: number) => void;
+  updateQuantity: (id: number, quantity: number) => void;
 
-  updateQuantity: (
-    id: number,
-    quantity: number
-  ) => void;
-
-  updateDiscount: (
-    id: number,
-    discount: number
-  ) => void;
-
-  updateNotes: (
-    id: number,
-    notes: string
-  ) => void;
+  updateDiscount: (id: number, discount: number) => void;
+  updateNotes: (id: number, notes: string) => void;
 
   toggleDropship: (id: number) => void;
 
-  removeItem: (id: number) => void;
+  updateVendor: (id: number, vendor: string) => void;
+  updateVendorCost: (id: number, vendorCost: number) => void;
 
+  removeItem: (id: number) => void;
   clearCart: () => void;
 
   subtotal: () => number;
-
   tax: () => number;
-
   total: () => number;
 }
 
 export const useCartStore = create<CartStore>((set, get) => ({
   items: [],
 
-addItem: (item, dropship = false) =>
-  set((state) => {
-    const existing = state.items.find(
-      (i) => i.id === item.id
-    );
+  addItem: (item, dropship = false) =>
+    set((state) => {
+      const existing = state.items.find((i) => i.id === item.id);
 
-    if (existing) {
+      if (existing) {
+        return {
+          items: state.items.map((i) =>
+            i.id === item.id
+              ? {
+                  ...i,
+                  quantity: i.quantity + 1,
+                }
+              : i
+          ),
+        };
+      }
+
       return {
-        items: state.items.map((i) =>
-          i.id === item.id
-            ? {
-                ...i,
-                quantity: i.quantity + 1,
-              }
-            : i
-        ),
+        items: [
+          ...state.items,
+          {
+            ...item,
+            discount: 0,
+            notes: "",
+            dropship,
+            vendor: "",
+            vendorCost: 0,
+          },
+        ],
       };
-    }
-
-    return {
-      items: [
-        ...state.items,
-        {
-          ...item,
-          discount: 0,
-          notes: "",
-          dropship,
-        },
-      ],
-    };
-  }),
+    }),
 
   increaseQuantity: (id) =>
     set((state) => ({
@@ -164,11 +157,33 @@ addItem: (item, dropship = false) =>
       ),
     })),
 
+  updateVendor: (id, vendor) =>
+    set((state) => ({
+      items: state.items.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              vendor,
+            }
+          : item
+      ),
+    })),
+
+  updateVendorCost: (id, vendorCost) =>
+    set((state) => ({
+      items: state.items.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              vendorCost,
+            }
+          : item
+      ),
+    })),
+
   removeItem: (id) =>
     set((state) => ({
-      items: state.items.filter(
-        (item) => item.id !== id
-      ),
+      items: state.items.filter((item) => item.id !== id),
     })),
 
   clearCart: () =>
@@ -176,21 +191,15 @@ addItem: (item, dropship = false) =>
       items: [],
     }),
 
-  subtotal: () => {
-    return get().items.reduce(
+  subtotal: () =>
+    get().items.reduce(
       (sum, item) =>
         sum +
-        (item.price - item.discount) *
-          item.quantity,
+        (item.price - item.discount) * item.quantity,
       0
-    );
-  },
+    ),
 
-  tax: () => {
-    return get().subtotal() * 0.0825;
-  },
+  tax: () => get().subtotal() * 0.0825,
 
-  total: () => {
-    return get().subtotal() + get().tax();
-  },
+  total: () => get().subtotal() + get().tax(),
 }));

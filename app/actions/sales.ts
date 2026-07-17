@@ -16,12 +16,17 @@ interface CheckoutItem {
   notes: string;
 
   dropship: boolean;
+
+  vendor: string;
+  vendorCost: number;
 }
+
 
 export async function checkoutSale(
   items: CheckoutItem[],
   paymentMethod: string,
   customerId?: number
+  
 ) {
   if (items.length === 0) {
     throw new Error("Cart is empty.");
@@ -35,7 +40,7 @@ export async function checkoutSale(
     0
   );
 
-  const tax = subtotal * 0.0825;
+  const tax = 0;
 
   const total = subtotal + tax;
 
@@ -80,6 +85,8 @@ export async function checkoutSale(
             : "DELIVERED",
 
           notes: item.notes,
+
+          vendor: item.dropship ? item.vendor : null,
         },
       });
 
@@ -96,6 +103,55 @@ export async function checkoutSale(
         });
       }
     }
+
+    const dropshipItems = items.filter((item) => item.dropship);
+
+    if (dropshipItems.length > 0) {
+      const vendorGroups = new Map<string, CheckoutItem[]>();
+
+      for (const item of dropshipItems) {
+        const group = vendorGroups.get(item.vendor) || [];
+        group.push(item);
+        vendorGroups.set(item.vendor, group);
+      }
+
+      for (const [vendor, vendorItems] of vendorGroups) {
+        const purchaseSubtotal = vendorItems.reduce(
+          (sum, item) => sum + item.vendorCost * item.quantity,
+          0
+        );
+
+        const purchase = await tx.purchase.create({
+          data: {
+            purchaseNumber: "PO-" + Date.now().toString() + "-" + vendor.slice(0, 3).toUpperCase(),
+            supplier: vendor,
+            subtotal: purchaseSubtotal,
+            total: purchaseSubtotal,
+            notes: `Auto-generated from dropship sale ${invoiceNumber}`,
+          },
+        });
+
+        for (const item of vendorItems) {
+          await tx.purchaseItem.create({
+            data: {
+              purchaseId: purchase.id,
+              productId: item.id,
+              quantity: item.quantity,
+              unitCost: item.vendorCost,
+            },
+          });
+
+          await tx.product.update({
+            where: {
+              id: item.id,
+            },
+            data: {
+              cost: item.vendorCost,
+            },
+          });
+        }
+      }
+    }
   });
 
   revalidatePath("/");
@@ -109,4 +165,6 @@ export async function checkoutSale(
   revalidatePath("/customers");
 
   revalidatePath("/invoices");
+
+  revalidatePath("/purchases");
 }

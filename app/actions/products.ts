@@ -26,7 +26,9 @@ export async function addProduct(formData: FormData) {
     },
   });
 
+  revalidatePath("/");
   revalidatePath("/inventory");
+  revalidatePath("/sales");
   redirect("/inventory");
 }
 
@@ -56,7 +58,9 @@ export async function updateProduct(formData: FormData) {
     },
   });
 
+  revalidatePath("/");
   revalidatePath("/inventory");
+  revalidatePath("/sales");
   redirect("/inventory");
 }
 
@@ -67,5 +71,7 @@ export async function deleteProduct(id: number) {
     },
   });
 
+  revalidatePath("/");
   revalidatePath("/inventory");
+  revalidatePath("/sales");
 }
