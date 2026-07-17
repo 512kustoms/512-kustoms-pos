@@ -52,9 +52,6 @@ data: {
 
   category: String(formData.get("category")),
 
-  sku: String(formData.get("sku")),
-  barcode: String(formData.get("barcode") || ""),
-
   cost: Number(formData.get("cost")),
   retail: Number(formData.get("retail")),
 
